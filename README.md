@@ -58,34 +58,35 @@ Para generar documentos:
 
 Para configurar el API / Firmador:
 ```ruby
+
 	FE.configure do |config|
 		config.api_username "su_usuario_api_atv"
-  	config.api_password = "su_password_api_atv"
-  	config.key_path = "tmp/llave_criptografica.p12"
-  	config.key_password = "99999999999999"
-
-  	# api hacienda: valores default
-  	config.api_client_id = 'api-stag'
-  	config.documents_endpoint = "https://api.comprobanteselectronicos.go.cr/recepcion-sandbox/v1"
-  	config.authentication_endpoint = "https://idp.comprobanteselectronicos.go.cr/auth/realms/rut-stag/protocol/openid-connect/token"s
+		config.api_password = "su_password_api_atv"
+		config.key_path = "tmp/llave_criptografica.p12"
+		config.key_password = "99999999999999"
+		# api hacienda: valores default
+		config.api_client_id = 'api-stag'
+		config.documents_endpoint = "https://api.comprobanteselectronicos.go.cr/recepcion-sandbox/v1"
+		config.authentication_endpoint = "https://idp.comprobanteselectronicos.go.cr/auth/realms/rut-stag/protocol/openid-connect/token"s
 	end
 ```
 
 Para firmar documentos. (Debe tener java instalado)
 ```ruby
-  signer = FE::JavaSigner.new FE.configuration.key_path, FE.configuration.key_password, "/path/to/unsigned.xml", "/path/to/signed.xml"
-  signer.sign
+
+	signer = FE::JavaSigner.new FE.configuration.key_path, FE.configuration.key_password, "/path/to/unsigned.xml", "/path/to/signed.xml"
+	signer.sign
 ```
 
 
 Para enviar documentos al API
 ```ruby
-	api = FE::API.new
 	
+	api = FE::API.new
 	# document is FE::Document
-  signed_document = FE::SignedDocument.new(document,path)
-  api = FE::Api.new
-  if api.send_document(signed_document.payload)
+	signed_document = FE::SignedDocument.new(document,path)
+	api = FE::Api.new
+	if api.send_document(signed_document.payload)
 		puts "Document sent!"
 	else
 		puts "Error: #{api.errors}"
@@ -94,11 +95,12 @@ Para enviar documentos al API
 
 Para chequear el estatus del documento
 ```ruby
-	api = FE::API.new
-  FE::Utils.configure(options[:config_file])
-  api = FE::Api.new
-  document_status = api.get_document_status(key)
-  puts document_status.to_h
+
+	api = FE::API.new	
+	FE::Utils.configure(options[:config_file])
+	api = FE::Api.new
+	document_status = api.get_document_status(key)
+	puts document_status.to_h
 	#=> {key: "50601011600310112345600100010100000000011999999999", date: "2016-01-01T00:00:00-0600", status: "aceptado", datails: ""}
 ```
 
