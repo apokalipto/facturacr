@@ -1,0 +1,10 @@
+development:
+  api_username: su_usuario_api_atv
+  api_password: su_password_api_atv
+  key_path: tmp/llave_criptografica.p12
+  key_password: "99999999999999"
+  
+  # api hacienda: valores default
+  api_client_id: 'api-stag'
+  documents_endpoint: "https://api.comprobanteselectronicos.go.cr/recepcion-sandbox/v1"
+  authentication_endpoint: "https://idp.comprobanteselectronicos.go.cr/auth/realms/rut-stag/protocol/openid-connect/token"

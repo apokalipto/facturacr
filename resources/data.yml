@@ -1,0 +1,73 @@
+issuer: &ISSUER
+  name: EMISOR EJEMPLO
+  identification_document:
+    type: "02"
+    number: "3102123456"
+  phone: 
+    number: "22222222"
+  location:
+    province: "1"
+    county: "01"
+    district: "01"
+    others: "Direccion"
+  email: emisor@email.com
+  
+receiver: &RECEIVER
+  name: "RECEPTOR EJEMPLO"
+  identification_document:
+    type: "01"
+    number: "112345678"
+  
+document:
+  issuer: *ISSUER
+  receiver: *RECEIVER
+  number: 100
+  condition: "01"
+  credit_term: ~
+  items:
+    - line_number: 1
+      quantity: 1
+      unit: Sp
+      description: "Honorarios por servicios profesionales"
+      unit_price: 100
+      total: 100
+      subtotal: 100
+      net_total: 100
+    - line_number: 2
+      quantity: 2
+      unit: Unid
+      description: "Articulo de Venta"
+      unit_price: 50
+      total: 100
+      subtotal: 100
+      net_total: 113
+      taxes:
+          - code: "01"
+            rate: 13
+            total: 13
+  summary:
+    currency: "USD"
+    exchange_rate: 575
+    services_exent_total: 100
+    goods_taxable_total: 100
+    exent_total: 100
+    taxable_total: 100
+    subtotal: 200
+    gross_total: 200
+    tax_total: 13
+    net_total: 213
+  document_situation: "1"
+  security_code: "99999999"
+  references:
+    - code: "01"
+      reason: "Anulacion Documento"
+      document_type: "01"
+      number: "50601011600310112345600100010100000000011999999999"
+      date: "2018-03-31T13:58:57-06:00"
+credit_note:
+  number: 16
+          
+      
+      
+  
+    
