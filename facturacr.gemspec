@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["Josef.Sauter@gmail.com"]
 
   spec.summary       = %q{Facturación Electrónica de Costa Rica}
-  spec.homepage      = "http://www.agilesd.com"
+  spec.homepage      = "https://github.com/apokalipto/facturacr"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = "exe"
