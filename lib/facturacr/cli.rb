@@ -53,9 +53,9 @@ module FE
     desc "generate DOCUMENT ARGS", "generate xml documents"
     subcommand "generate", Generate
    
-    desc "sign_document XML_IN XML_OUT", "signs the xml document and stores the signed document in the output path"
+    desc "sign XML_IN XML_OUT", "signs the xml document and stores the signed document in the output path"
     method_option :config_file, aliases: '-c', desc: "default configuration file", default: "tmp/config.yml"
-    def sign_document(xml_in, xml_out)
+    def sign(xml_in, xml_out)
       FE::Utils.configure(options[:config_file])
       signer = FE::JavaSigner.new FE.configuration.key_path, FE.configuration.key_password, xml_in, xml_out
       signer.sign
@@ -66,15 +66,18 @@ module FE
     def send_document(path)
       FE::Utils.configure(options[:config_file])
       xml_document = FE::XmlDocument.new(path)
-      invoice = xml_document.document
-      signed_document = FE::SignedDocument.new(invoice,path)
+      document = xml_document.document
+      if document.is_a?(FE::ReceptionMessage)
+        document.receiver_id_type = "02"
+      end
+      signed_document = FE::SignedDocument.new(document,path)
       api = FE::Api.new
       if api.send_document(signed_document.payload)
         puts "Document Sent".green
-        puts "KEY: #{invoice.key}"
+        puts "KEY: #{document.key}"
         puts "Wait 5 seconds before check..."
         sleep 5
-        invoke :check, [invoice.key], :config_file=>options[:config_file]
+        invoke :check, [document.key], :config_file=>options[:config_file]
       else
         puts "ERROR".red
         ap api.errors
@@ -82,18 +85,7 @@ module FE
       end  
     end
     
-    desc "test_invoice NUMBER DATA_PATH", "generates a test invoice and sends it to the api"
-    method_option :config_file, aliases: '-c', desc: "default configuration file", default: "tmp/config.yml"
-    def test_invoice(number, data_path)
-      FE::Utils.configure(options[:config_file])
-      puts "Generating document ..."
-      invoke :generate_invoice, [data_path,"tmp/unsigned_#{number}.xml"], number: number
-      puts "Signing document ..."
-      invoke :sign_document, ["tmp/unsigned_#{number}.xml","tmp/#{number}.xml"]
-      puts "Sending ..."
-      invoke :send_document, ["tmp/#{number}.xml"]
-    end
-    
+        
     desc "setup PATH", "will create a tmp directory with a sample config file and a sample data file at the specified path."
     def setup(path)
       puts "\n\n SETUP FACTURACR \n\n"
@@ -103,8 +95,8 @@ module FE
       answer = ask("Are you sure you want to continue?", :yellow, limited_to: ["y","n"])
       if answer.downcase == "y"
         FileUtils.mkdir_p "#{path}/tmp"
-        FileUtils.cp "resources/data.yml", "#{path}/tmp/data.yml"
-        FileUtils.cp "config/config.yml", "#{path}/tmp/config.yml"
+        FileUtils.cp "#{FE.root}/resources/data.yml", "#{path}/tmp/data.yml"
+        FileUtils.cp "#{FE.root}/config/config.yml", "#{path}/tmp/config.yml"
         say "Done.", :green
       else
         say "Ok. Bye", :green

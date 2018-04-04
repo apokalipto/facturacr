@@ -132,6 +132,38 @@ module FE
       FE::Invoice.new date: args[:date], issuer: issuer, receiver: receiver, number: args[:number], items: items, condition: args[:condition], credit_term: args[:credit_term], summary: summary, security_code: args[:security_code], document_situation: args[:document_situation]
     end
     
+    def ticket(args = {})
+      if args[:issuer].is_a?(Hash)
+        issuer = self.issuer(args[:issuer])
+      else
+        issuer = args[:issuer]
+      end
+      
+      if args[:receiver].is_a?(Hash)
+        receiver = self.receiver(args[:receiver])
+      else
+        receiver = args[:receiver]
+      end
+      
+      if args[:items].is_a?(Array) && args[:items].first.is_a?(Hash)
+        tmp_items = []
+        args[:items].each do |i|
+          tmp_items << self.item(i)
+        end
+        items = tmp_items
+      else
+        items = args[:items]
+      end
+      
+      if args[:summary].is_a?(Hash)
+        summary = self.summary(args[:summary])
+      else
+        summary = args[:summary]
+      end
+      FE::Ticket.new date: args[:date], issuer: issuer, receiver: receiver, number: args[:number], items: items, condition: args[:condition], credit_term: args[:credit_term], summary: summary, security_code: args[:security_code], document_situation: args[:document_situation]
+    end
+    
+    
     def credit_note(args = {})
       if args[:issuer].is_a?(Hash)
         issuer = self.issuer(args[:issuer])
@@ -212,6 +244,13 @@ module FE
       end
       
       FE::DebitNote.new date: args[:date], issuer: issuer, receiver: receiver, number: args[:number], items: items, condition: args[:condition], credit_term: args[:credit_term], summary: summary, security_code: args[:security_code], document_situation: args[:document_situation], references: references
+    end
+    
+    def reception_message(args={})
+      FE::ReceptionMessage.new number: args[:number], date: args[:date], key: args[:key], 
+            issuer_id_number: args[:issuer_id_number], issuer_id_type: args[:issuer_id_type], 
+            receiver_id_number: args[:receiver_id_number], receiver_id_type: args[:receiver_id_type], 
+            message: args[:message], details: args[:details], tax: args[:tax], total: args[:total], security_code: args[:security_code], document_situation: args[:document_situation]
     end
     
     

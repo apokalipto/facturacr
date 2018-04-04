@@ -24,7 +24,8 @@ module FE
       
       @token
     rescue => e
-      raise "AUTH ERROR"
+      puts "AUTH ERROR: #{e.message}".red
+      raise e
     end
     
         
@@ -45,7 +46,13 @@ module FE
     
     def get_document(key)
       authenticate
-      response = RestClient.get "#{@document_endpoint}/comprogantes/#{key}", {:Authorization=> "bearer #{@token}", content_type: :json}
+      response = RestClient.get "#{@document_endpoint}/comprobantes/#{key}", {:Authorization=> "bearer #{@token}", content_type: :json}
+      JSON.parse(response)
+    end
+    
+    def get_documents
+      authenticate
+      response = RescClient.get "#{@document_endpoint}/comprobantes", {:Authorization => "bearer #{@token}", content_type: :json }
       JSON.parse(response)
     end
         

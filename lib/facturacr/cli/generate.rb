@@ -19,7 +19,7 @@ module FE
         invoice.number = options[:number].to_i if options[:number].present?
         
         if options[:output_path]
-          output_path = output_path
+          output_path = options[:output_path]
         else
           output_path = "tmp/#{invoice.key}.xml"
         end
@@ -55,7 +55,7 @@ module FE
         credit_note.number = options[:number].to_i if options[:number].present?
         
         if options[:output_path]
-          output_path = output_path
+          output_path = options[:output_path]
         else
           output_path = "tmp/#{credit_note.key}.xml"
         end
@@ -90,13 +90,89 @@ module FE
         debit_note.number = options[:number].to_i if options[:number].present?
         
         if options[:output_path]
-          output_path = output_path
+          output_path = options[:output_path]
         else
           output_path = "tmp/#{debit_note.key}.xml"
         end
         
         write(debit_note, output_path)
         print_details(debit_note)
+        sign(output_path, options) if options[:sign]
+        send_document("#{output_path}.signed.xml") if options[:sign] && options[:send]
+        
+      end
+      
+      desc "ticket", "generates an XML ticket"
+      method_option :config_file, aliases: '-c', desc: "default configuration file", default: "tmp/config.yml"
+      method_option :number, aliases: '-n', desc: "set the number of the document"
+      method_option :sign, type: :boolean, default: false
+      method_option :send, type: :boolean, default: false
+      method_option :data_path, default: "tmp/data.yml"
+      method_option :output_path, desc: "path to save the output"     
+      def ticket      
+        data = YAML.load_file(options[:data_path]).with_indifferent_access
+        builder = FE::Builder.new
+        
+        ticket = builder.ticket(data[:document])
+        ticket.date = Time.now
+        ticket.number = options[:number].to_i if options[:number].present?
+        
+        if options[:output_path]
+          output_path = options[:output_path]
+        else
+          output_path = "tmp/#{ticket.key}.xml"
+        end
+        
+        write(ticket, output_path)
+        print_details(ticket)
+        sign(output_path, options) if options[:sign]
+        send_document("#{output_path}.signed.xml") if options[:sign] && options[:send]
+        
+      end
+      desc "reception_message", "generate an XML reception message"
+      method_option :xml_in, aliases: '-i', desc: "path to the xml invoice to accept"
+      method_option :number, aliases: '-n', desc: "the number of the document"
+      method_option :output_path, desc: "path to save the output"
+      method_option :sign, type: :boolean, default: false
+      method_option :send, type: :boolean, default: false
+      method_option :action, aliases: '-a', desc: "action 1=total 2=partial 3=reject", limited_to: [1,2,3]
+      method_option :details, desc: "details to include"
+      method_option :document_situation, desc: "the situation of the document", default: "1"
+      method_option :config_file, aliases: '-c', desc: "default configuration file", default: "tmp/config.yml"
+      def reception_message
+        doc = XmlDocument.new(options[:xml_in]) 
+        
+        builder = FE::Builder.new
+      
+        # Roles of receiver and issuer are inverted because they are extracted from the document.
+        # The ISSUER of the reception message is the RECEIVER of the document        
+        message = builder.reception_message({
+          key: doc.document.key, 
+          date: doc.document.date, 
+          number: options[:number],
+          issuer_id_number: doc.document.receiver.identification_document.id_number,
+          issuer_id_type: doc.document.receiver.identification_document.document_type,
+          receiver_id_number: doc.document.issuer.identification_document.id_number,
+          receiver_id_type: doc.document.issuer.identification_document.document_type,
+          message: options[:action],
+          tax: doc.document.summary.tax_total,
+          total: doc.document.summary.net_total,
+          document_situation: options[:document_situation]
+        })
+        
+        message.security_code = (SecureRandom.random_number * (10**8)).round.to_s
+        if options[:output_path]
+          output_path = options[:output_path]
+        else
+          output_path = "tmp/msj-receptor-#{message.key}.xml"
+        end
+        write(message, output_path)
+        puts "Mensaje Receptor"
+        puts "Accion: #{FE::ReceptionMessage::MESSAGE_TYPES[message.message]}"
+        puts "Factura: #{doc.document.key}"
+        puts "Ced. Receptor: #{message.receiver_id_number}"
+        puts "Ced. Emisor: #{message.issuer_id_number}"
+
         sign(output_path, options) if options[:sign]
         send_document("#{output_path}.signed.xml") if options[:sign] && options[:send]
         
@@ -115,10 +191,10 @@ module FE
         end
       
         def sign(path, options)
-          puts " => SIGN ..............."
+          puts "=> SIGN ................."
           cli = FE::CLI.new
           cli.options = {config_file: options[:config_file]}
-          cli.sign_document("#{path}", "#{path}.signed.xml")
+          cli.sign("#{path}", "#{path}.signed.xml")
         end
       
         def send_document(path)

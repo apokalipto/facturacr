@@ -1,6 +1,5 @@
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'facturacr'
-require 'xml_security'
 
 require 'facturacr/document'
 require 'facturacr/document/fax'

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<NotaCreditoElectronica xmlns="https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/notaCreditoElectronica" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <Clave>50601041800310263679500100001030000000111199999999</Clave>
+   <NumeroConsecutivo>00100001030000000111</NumeroConsecutivo>
+   <FechaEmision>2018-04-01T01:00:18-06:00</FechaEmision>
+   <Emisor>
+      <Nombre>EMISOR EJEMPLO</Nombre>
+      <Identificacion>
+         <Tipo>02</Tipo>
+         <Numero>3102123456</Numero>
+      </Identificacion>
+      <Ubicacion>
+         <Provincia>1</Provincia>
+         <Canton>01</Canton>
+         <Distrito>01</Distrito>
+         <OtrasSenas>Direccion</OtrasSenas>
+      </Ubicacion>
+      <Telefono>
+         <CodigoPais>506</CodigoPais>
+         <NumTelefono>22222222</NumTelefono>
+      </Telefono>
+      <CorreoElectronico>email@ejemplo.com</CorreoElectronico>
+   </Emisor>
+   <Receptor>
+      <Nombre>RECEPTOR EJEMPLO</Nombre>
+      <Identificacion>
+         <Tipo>01</Tipo>
+         <Numero>112345678</Numero>
+      </Identificacion>
+   </Receptor>
+   <CondicionVenta>01</CondicionVenta>
+   <MedioPago>01</MedioPago>
+   <DetalleServicio>
+      <LineaDetalle>
+         <NumeroLinea>1</NumeroLinea>
+         <Cantidad>1</Cantidad>
+         <UnidadMedida>Sp</UnidadMedida>
+         <Detalle>Honorarios por servicios profesionales</Detalle>
+         <PrecioUnitario>300</PrecioUnitario>
+         <MontoTotal>300</MontoTotal>
+         <SubTotal>300</SubTotal>
+         <MontoTotalLinea>300</MontoTotalLinea>
+      </LineaDetalle>
+      <LineaDetalle>
+         <NumeroLinea>2</NumeroLinea>
+         <Cantidad>2</Cantidad>
+         <UnidadMedida>Unid</UnidadMedida>
+         <Detalle>Articulo de Venta</Detalle>
+         <PrecioUnitario>50</PrecioUnitario>
+         <MontoTotal>100</MontoTotal>
+         <SubTotal>100</SubTotal>
+         <Impuesto>
+            <Codigo>01</Codigo>
+            <Tarifa>13</Tarifa>
+            <Monto>13</Monto>
+         </Impuesto>
+         <MontoTotalLinea>113</MontoTotalLinea>
+      </LineaDetalle>
+   </DetalleServicio>
+   <ResumenFactura>
+      <CodigoMoneda>USD</CodigoMoneda>
+      <TipoCambio>575</TipoCambio>
+      <TotalServGravados>0.0</TotalServGravados>
+      <TotalServExentos>300.0</TotalServExentos>
+      <TotalMercanciasGravadas>100.0</TotalMercanciasGravadas>
+      <TotalMercanciasExentas>0.0</TotalMercanciasExentas>
+      <TotalGravado>100.0</TotalGravado>
+      <TotalExento>300.0</TotalExento>
+      <TotalVenta>400.0</TotalVenta>
+      <TotalDescuentos>0.0</TotalDescuentos>
+      <TotalVentaNeta>400.0</TotalVentaNeta>
+      <TotalImpuesto>13.0</TotalImpuesto>
+      <TotalComprobante>413.0</TotalComprobante>
+   </ResumenFactura>
+   <InformacionReferencia>
+      <TipoDoc>01</TipoDoc>
+      <Numero>50601041800310263679500100001010000000109199999999</Numero>
+      <FechaEmision>2018-04-01T00:19:27-06:00</FechaEmision>
+      <Codigo>01</Codigo>
+      <Razon>Anula documento</Razon>
+   </InformacionReferencia>
+   <Normativa>
+      <NumeroResolucion>DGT-R-48-2016</NumeroResolucion>
+      <FechaResolucion>20-02-2017 13:22:22</FechaResolucion>
+   </Normativa>
+</NotaCreditoElectronica>

@@ -17,7 +17,7 @@ module FE
       }
       
       validates :document_type, presence: true, inclusion: FE::Document::DOCUMENT_TYPES.keys
-      validates :number, presence: true, length: {is: 50}
+      validates :number, presence: true, length: {maximum: 50}
       validates :date, presence: true
       validates :code, presence: true, length: {is: 2}, inclusion: REFERENCE_CODES.keys
       validates :reason, presence: true, length: {maximum: 180}

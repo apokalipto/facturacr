@@ -12,6 +12,7 @@ require 'facturacr/api'
 require 'facturacr/builder'
 require 'facturacr/version'
 require 'facturacr/signer/signer'
+require 'facturacr/reception_message'
 
 module FE
   class << self

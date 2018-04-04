@@ -30,45 +30,45 @@ O instale el gem
 Para generar documentos:
 
 ```ruby
-	require 'facturacr'
+require 'facturacr'
 
-	id_document = FE::Document::IdentificationDocument.new type: "01", number: "112345678"
-	phone = FE::Document::Phone.new country_code: "506", "22222222" 
-	location = FE::Document::Location.new province: "1",county: "01", district: "01", others: "Otras señas"
-	issuer = FE::Document::Issuer.new name: "EMISON EJEMPLO", identification_document: id_document, location: location, phone: phone, email: "emisor@ejemplo.com"
+id_document = FE::Document::IdentificationDocument.new type: "01", number: "112345678"
+phone = FE::Document::Phone.new country_code: "506", "22222222" 
+location = FE::Document::Location.new province: "1",county: "01", district: "01", others: "Otras señas"
+issuer = FE::Document::Issuer.new name: "EMISON EJEMPLO", identification_document: id_document, location: location, phone: phone, email: "emisor@ejemplo.com"
 
-	reciever_id_document = FE::Document::IdentificationDocument.new type: "02", number: "3102123456"
-	receiver = FE::Document::Receiver.new name: "RECEPTOR EJEMPLO", identification_document: id_document
+reciever_id_document = FE::Document::IdentificationDocument.new type: "02", number: "3102123456"
+receiver = FE::Document::Receiver.new name: "RECEPTOR EJEMPLO", identification_document: id_document
 
-	items = []
-	items << FE::Document::Item.new(code: "001", line_number: 1, quantity: 1, unit: "Sp", description: "Desarrollo de Software y Mantenimiento", unit_price: 300, subtotal: 300, net_total: 300, total: 300)
-	taxes = [FE::Document::Tax.new(code: "01", rate: 13, total: (100 * 0.13))]
-	items << FE::Document::Item.new(code: "002", line_number: 2, quantity: 2, unit: "Unid", description: "Impresora de POS", unit_price: 50, total: 100, taxes: taxes, net_total: 113, subtotal: 100)
-	summary = FE::Document::Summary.new currency: "USD", exchange_rate: 575, services_exent_total: 300, goods_taxable_total: 100, exent_total: 300, taxable_total: 100, subtotal: 400, gross_total: 400, tax_total: 13, net_total: 413
+items = []
+items << FE::Document::Item.new(code: "001", line_number: 1, quantity: 1, unit: "Sp", description: "Desarrollo de Software y Mantenimiento", unit_price: 300, subtotal: 300, net_total: 300, total: 300)
+taxes = [FE::Document::Tax.new(code: "01", rate: 13, total: (100 * 0.13))]
+items << FE::Document::Item.new(code: "002", line_number: 2, quantity: 2, unit: "Unid", description: "Impresora de POS", unit_price: 50, total: 100, taxes: taxes, net_total: 113, subtotal: 100)
+summary = FE::Document::Summary.new currency: "USD", exchange_rate: 575, services_exent_total: 300, goods_taxable_total: 100, exent_total: 300, taxable_total: 100, subtotal: 400, gross_total: 400, tax_total: 13, net_total: 413
 
 
-	invoice = FE::Invoice.new date: date, issuer: issuer, receiver: receiver, number: number, items: items, condition: condition, credit_term: credit_term, summary: summary, security_code: "12345678", document_situation: "1"
+invoice = FE::Invoice.new date: date, issuer: issuer, receiver: receiver, number: number, items: items, condition: condition, credit_term: credit_term, summary: summary, security_code: "12345678", document_situation: "1"
 
-	# Para generar el XML como string
-	xml = invoice.generate
-	
-	# Escribir el archivo
-	File.open("/path/to/file.xml","w"){|f| f.write(xml)}
+# Para generar el XML como string
+xml = invoice.generate
+
+# Escribir el archivo
+File.open("/path/to/file.xml","w"){|f| f.write(xml)}
 ```
 
 Para configurar el API / Firmador:
 ```ruby
 
-	FE.configure do |config|
-		config.api_username "su_usuario_api_atv"
-		config.api_password = "su_password_api_atv"
-		config.key_path = "tmp/llave_criptografica.p12"
-		config.key_password = "99999999999999"
-		# api hacienda: valores default
-		config.api_client_id = 'api-stag'
-		config.documents_endpoint = "https://api.comprobanteselectronicos.go.cr/recepcion-sandbox/v1"
-		config.authentication_endpoint = "https://idp.comprobanteselectronicos.go.cr/auth/realms/rut-stag/protocol/openid-connect/token"s
-	end
+FE.configure do |config|
+	config.api_username "su_usuario_api_atv"
+	config.api_password = "su_password_api_atv"
+	config.key_path = "tmp/llave_criptografica.p12"
+	config.key_password = "99999999999999"
+	# api hacienda: valores default
+	config.api_client_id = 'api-stag'
+	config.documents_endpoint = "https://api.comprobanteselectronicos.go.cr/recepcion-sandbox/v1"
+	config.authentication_endpoint = "https://idp.comprobanteselectronicos.go.cr/auth/realms/rut-stag/protocol/openid-connect/token"s
+end
 ```
 
 Para firmar documentos. (Debe tener java instalado)
@@ -81,27 +81,27 @@ Para firmar documentos. (Debe tener java instalado)
 
 Para enviar documentos al API
 ```ruby
-	
-	api = FE::API.new
-	# document is FE::Document
-	signed_document = FE::SignedDocument.new(document,path)
-	api = FE::Api.new
-	if api.send_document(signed_document.payload)
-		puts "Document sent!"
-	else
-		puts "Error: #{api.errors}"
-	end
+
+api = FE::API.new
+# document is FE::Document
+signed_document = FE::SignedDocument.new(document,path)
+api = FE::Api.new
+if api.send_document(signed_document.payload)
+	puts "Document sent!"
+else
+	puts "Error: #{api.errors}"
+end
 ```
 
 Para chequear el estatus del documento
 ```ruby
 
-	api = FE::API.new	
-	FE::Utils.configure(options[:config_file])
-	api = FE::Api.new
-	document_status = api.get_document_status(key)
-	puts document_status.to_h
-	#=> {key: "50601011600310112345600100010100000000011999999999", date: "2016-01-01T00:00:00-0600", status: "aceptado", datails: ""}
+api = FE::API.new	
+FE::Utils.configure(options[:config_file])
+api = FE::Api.new
+document_status = api.get_document_status(key)
+puts document_status.to_h
+#=> {key: "50601011600310112345600100010100000000011999999999", date: "2016-01-01T00:00:00-0600", status: "aceptado", datails: ""}
 ```
 
 ## Lína de comando
@@ -112,15 +112,22 @@ Para utilziar la línea de comando y generar documentos de prueba, debe generar 
 
 Modifique los archivos config.yml y data.yml para utilziar la línea de comando
 
-Para generar documentos:
+Resumen de la funcionalidad de la línea de comando
 
-	$ facturacr generate help
-	
+	$ facturacr help
 	Commands:
-	  facturacr generate credit_note     # generates an XML credit note
-	  facturacr generate debit_note      # generates an XML debit note
-	  facturacr generate help [COMMAND]  # Describe subcommands or one specific subcommand
-	  facturacr generate invoice         # generates an XML invoice
+	  facturacr check KEY                   # checks a sent document in the api
+	  facturacr generate DOCUMENT ARGS      # generate xml documents
+	  facturacr generate credit_note        # generates an XML credit note
+	  facturacr generate debit_note         # generates an XML debit note
+	  facturacr generate help [COMMAND]     # Describe subcommands or one specific subcommand
+	  facturacr generate invoice            # generates an XML invoice
+	  facturacr generate reception_message  # generate an XML reception message
+	  facturacr generate ticket             # generates an XML ticket
+	  facturacr help [COMMAND]              # Describe available commands or one specific command
+	  facturacr send_document SIGNED_XML    # sends the SIGNED_XML file to the API
+	  facturacr setup PATH                  # will create a tmp directory with a sample config file and a sample data file at the specified path.
+	  facturacr sign XML_IN XML_OUT         # signs the xml document and stores the signed document in the output path
 
 Por ejemplo, para generar una factura
 
@@ -156,7 +163,7 @@ Adicionalmente se pueden especificar las opciones para firma y enviar a hacienda
 
 Para firmar documentos
 
-	$ facturacr sign_document /path/to/unsigned.xml /path/to/signed.xml
+	$ facturacr sign /path/to/unsigned.xml /path/to/signed.xml
 
 Para enviar documentos
 
