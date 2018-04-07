@@ -53,11 +53,11 @@ module FE
       private
       
       def totals_ok?
-        errors[:taxable_total] << "invalid amount" unless @taxable_total == @services_taxable_total + @goods_taxable_total
-        errors[:exent_total] << "invalid amount" unless @exent_total == @services_exent_total + @goods_exent_total
-        errors[:subtotal] << "invalid amount" unless @subtotal == @taxable_total + @exent_total
-        errors[:gross_total] << "invalid amount" unless @gross_total == @subtotal - @discount_total
-        errors[:net_total] << "invalid amount" unless @net_total == @gross_total + @tax_total
+        errors[:taxable_total] << "invalid amount" unless @taxable_total == (@services_taxable_total + @goods_taxable_total).round(5)
+        errors[:exent_total] << "invalid amount" unless @exent_total == (@services_exent_total + @goods_exent_total).round(5)
+        errors[:subtotal] << "invalid amount" unless @subtotal == (@taxable_total + @exent_total).round(5)
+        errors[:gross_total] << "invalid amount" unless @gross_total == (@subtotal - @discount_total).round(5)
+        errors[:net_total] << "invalid amount" unless @net_total == (@gross_total + @tax_total).round(5)
       end
     end
   end
