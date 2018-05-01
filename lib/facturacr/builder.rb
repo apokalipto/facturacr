@@ -92,7 +92,12 @@ module FE
       taxes = []
       if txs.is_a?(Array) && txs.first.is_a?(Hash)
         txs.each do |t|
-          taxes << FE::Document::Tax.new(code: "01", rate: 13, total: 13)
+          exo = t.delete(:exoneration)
+          if exo && exo.is_a?(Hash)
+            t[:exoneration] = FE::Document::Exoneration.new(exo)
+          end
+          
+          taxes << FE::Document::Tax.new(t)
         end
       else
         taxes = txs
@@ -257,6 +262,7 @@ module FE
     def reference(args={})
       FE::Document::Reference.new args
     end
+    
     
   end
 end

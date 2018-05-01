@@ -101,17 +101,20 @@ module FE
             item.net_total = line.css("MontoTotalLinea").text.to_f
             item.taxes = []
             line.css("Impuesto").each do |tax|
-              item.taxes << FE::Document::Tax.new(code: tax.css("Codigo").text, rate: tax.css("Tarifa").text.to_f, total: tax.css("Monto").text.to_f)
-            end
-            unless line.css("Exoneracion").empty?
-              exo = FE::Document::Exoneration.new
-              exo.document_type = line.css("Exoneracion TipoDocumento").text
-              exo.document_number = line.css("Exoneracion NumeroDocumento").text
-              exo.institution = line.css("Exoneracion NombreInstitucion").text
-              exo.date = DateTime.parse(line.css("Exoneracion FechaEmision").text)
-              exo.total_tax = line.css("Exoneracion MontoImpuesto").text.to_f
-              exo.percentage = line.css("Exoneracion PorcentajeCompra").text.to_i
-              item.exoneration = exo
+              exo = nil
+              t_args = {code: tax.css("Codigo").text, rate: tax.css("Tarifa").text.to_f, total: tax.css("Monto").text.to_f}
+              unless tax.css("Exoneracion").empty?
+                exo = FE::Document::Exoneration.new
+                exo.document_type = line.css("Exoneracion TipoDocumento").text
+                exo.document_number = line.css("Exoneracion NumeroDocumento").text
+                exo.institution = line.css("Exoneracion NombreInstitucion").text
+                exo.date = DateTime.parse(line.css("Exoneracion FechaEmision").text)
+                exo.total_tax = line.css("Exoneracion MontoImpuesto").text.to_f
+                exo.percentage = line.css("Exoneracion PorcentajeCompra").text.to_i
+                t_args[:exoneration] = exo
+              end
+              
+              item.taxes << FE::Document::Tax.new(t_args)
             end
             @items << item
           end

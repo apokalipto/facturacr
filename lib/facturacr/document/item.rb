@@ -4,7 +4,7 @@ module FE
       include ActiveModel::Validations
       
       attr_accessor :line_number, :code, :quantity, :unit, :description, :unit_price, :total,
-                    :discount, :discount_reason, :subtotal, :taxes, :exoneration, :net_total
+                    :discount, :discount_reason, :subtotal, :taxes, :net_total
                     
       validates :line_number, presence: true
       validates :quantity, presence: true, numericality: {greater_than: 0}

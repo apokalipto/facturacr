@@ -19,13 +19,14 @@ module FE
         "11"=>"Impuesto Selectivo de Consumo Compras Autorizadas",
         "99"=>"Otros"
       }
-      attr_accessor :code, :rate, :total
+      attr_accessor :code, :rate, :total, :exoneration
       
       validates :code, presence: true, inclusion: TAX_CODES.keys
       def initialize(args={})
         @code = args[:code]
         @rate = args[:rate]
         @total = args[:total]
+        @exoneration = args[:exoneration]
       end
       
       def build_xml(node)
@@ -36,6 +37,9 @@ module FE
           xml.Codigo @code
           xml.Tarifa @rate
           xml.Monto @total
+          if @exoneration.present?
+            @exoneration.build_xml(xml)
+          end
         end
       end
       

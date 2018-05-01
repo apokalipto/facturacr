@@ -12,7 +12,7 @@ module FE
         "05" => "Zonas Francas",
         "99" => "Otros"
       }
-      attr_accessor :document_type, :document_number, :institution, :date, :total_tax, :percentage
+      attr_accessor :document_type, :document_number, :institution, :date, :total_tax, :percentage, :net_total
       
       validates :document_type, presence: true, inclusion: DOCUMENT_TYPES.keys
       validates :document_number, presence: true
@@ -25,9 +25,11 @@ module FE
         @document_type = args[:document_type]
         @document_number = args[:document_number]
         @institution = args[:institution]
-        @date = args[:date].xmlschema
+        @date = args[:date]
         @total_tax = args[:total_tax]
-        @percentage = args[:percentage]
+        if args[:net_total].present?
+          @percentage = ((@total_tax / args[:net_total].to_f)*100).to_i
+        end
       end
       
       def build_xml(node)
@@ -35,10 +37,10 @@ module FE
         node = Nokogiri::XML::Builder.new if node.nil?
         
         node.Exoneracion do |xml|
-          xml.TipoDocument @document_type
+          xml.TipoDocumento @document_type
           xml.NumeroDocumento @document_number
           xml.NombreInstitucion @institution
-          xml.FechaEmision @date
+          xml.FechaEmision @date.xmlschema
           xml.MontoImpuesto @total_tax
           xml.PorcentajeCompra @percentage
         end

@@ -21,7 +21,6 @@ require 'facturacr/signer/signer'
 require 'facturacr/api'
 require 'facturacr/signed_document'
 
-
 require 'minitest/autorun'
 require 'yaml'
 
