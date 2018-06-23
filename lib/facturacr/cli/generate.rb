@@ -160,7 +160,7 @@ module FE
           document_situation: options[:document_situation]
         })
         
-        message.security_code = (SecureRandom.random_number * (10**8)).round.to_s
+        message.security_code = 8.times.map{ rand(0..9) }.join
         if options[:output_path]
           output_path = options[:output_path]
         else

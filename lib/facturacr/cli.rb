@@ -58,6 +58,7 @@ module FE
     def sign(xml_in, xml_out)
       FE::Utils.configure(options[:config_file])
       signer = FE::JavaSigner.new FE.configuration.key_path, FE.configuration.key_password, xml_in, xml_out
+      #signer = FE::NokoSigner.new FE.configuration.key_path, FE.configuration.key_password, xml_in, xml_out
       signer.sign
     end
     

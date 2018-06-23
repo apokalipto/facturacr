@@ -40,22 +40,6 @@ module FE
       }
     end
     
-    def key
-      raise "Documento inválido: #{errors.messages}" unless valid?  
-      country = "506"
-      day = "%02d" % @date.day
-      month = "%02d" % @date.month
-      year = "%02d" % (@date.year - 2000)
-      id_number = @receiver_id_number.rjust(12,"0")
-
-      situation = @document_situation
-      security_code = @security_code
-
-      result = "#{country}#{day}#{month}#{year}#{id_number}#{sequence}#{situation}#{security_code}"
-      raise "The key is invalid: #{result}" unless result.length.eql?(50)
-      
-      result
-    end
     
     def headquarters
       @headquarters ||= "001"
@@ -84,12 +68,12 @@ module FE
       builder  = Nokogiri::XML::Builder.new
       
       builder.MensajeReceptor(@namespaces) do |xml|
-        xml.Clave key
+        xml.Clave @key
         xml.NumeroCedulaEmisor @issuer_id_number
         xml.FechaEmisionDoc @date.xmlschema
         xml.Mensaje @message
         xml.DetalleMensaje @details if @details
-        xml.MontoTotalImpuesto @tax if @tax
+        xml.MontoTotalImpuesto @tax.to_f
         xml.TotalFactura @total
         xml.NumeroCedulaReceptor @receiver_id_number
         xml.NumConsecutivoReceptor sequence

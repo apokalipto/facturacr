@@ -18,6 +18,7 @@ require 'facturacr/document/reference'
 require 'facturacr/invoice'
 require 'facturacr/credit_note'
 require 'facturacr/signer/signer'
+require 'facturacr/signer/noko_signer'
 require 'facturacr/api'
 require 'facturacr/signed_document'
 
