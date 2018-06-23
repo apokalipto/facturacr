@@ -14,7 +14,6 @@ module FE
         end
         root_tag = @doc.elements.first.name
         
-        
         if root_tag.eql?('FacturaElectronica')
           @document = FE::Invoice.new
         elsif root_tag.eql?("NotaCreditoElectronica")
@@ -170,7 +169,7 @@ module FE
           @document.receiver_id_number = @doc.css("#{root_tag} NumeroCedulaReceptor").text
           @document.message = @doc.css("#{root_tag} Mensaje").text
           @document.details = @doc.css("#{root_tag} DetalleMensaje").text
-          @document.number = @key[31..40].to_i
+          @document.number = @doc.css("#{root_tag} NumeroConsecutivoReceptor").text[10..-1].to_i
           @document.document_situation = @key[41]
           @document.security_code = @key[42..-1]
           @document.total = @doc.css("#{root_tag} TotalFactura").text

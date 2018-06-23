@@ -7,7 +7,7 @@ require 'json'
 module FE
   class Api
     
-    attr_accessor :authentication_endpoint, :document_endpoint, :username, :password, :client_id, :errors
+    attr_accessor :authentication_endpoint, :document_endpoint, :username, :password, :client_id, :errors, :check_location
     
     def initialize(configuration = nil)
       @authentication_endpoint = (configuration || FE.configuration).authentication_endpoint
@@ -32,7 +32,11 @@ module FE
     def send_document(payload)
       authenticate    
       response = RestClient.post "#{@document_endpoint}/recepcion", payload.to_json, {:Authorization=> "bearer #{@token}", content_type: :json}
-      return true if response.code.eql?(200) || response.code.eql?(202)
+      if response.code.eql?(200) || response.code.eql?(202)
+        @check_location = response.headers[:location]
+        puts "CheckLocation: #{@check_location}"
+        return true 
+      end
     rescue => e
       @errors[:request] = {message: e.message, response: e.response}
       return false      

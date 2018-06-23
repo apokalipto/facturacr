@@ -68,17 +68,20 @@ module FE
       FE::Utils.configure(options[:config_file])
       xml_document = FE::XmlDocument.new(path)
       document = xml_document.document
-      if document.is_a?(FE::ReceptionMessage)
-        document.receiver_id_type = "02"
-      end
       signed_document = FE::SignedDocument.new(document,path)
       api = FE::Api.new
-      if api.send_document(signed_document.payload)
+      payload = signed_document.payload
+      if api.send_document(payload)
         puts "Document Sent".green
         puts "KEY: #{document.key}"
         puts "Wait 5 seconds before check..."
         sleep 5
-        invoke :check, [document.key], :config_file=>options[:config_file]
+        if document.is_a?(FE::ReceptionMessage)
+          check_key = api.check_location.split("/").last
+        else
+          check_key = document.key
+        end
+        invoke :check, [check_key], :config_file=>options[:config_file]
       else
         puts "ERROR".red
         ap api.errors

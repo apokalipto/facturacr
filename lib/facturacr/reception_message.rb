@@ -9,7 +9,7 @@ module FE
       "2" => "Aceptacion Parcial",
       "3" => "Rechazado"
     }
-    attr_accessor :key, :date, :issuer_id_number, :receiver_id_number, :message, :details, :tax, :total, :number, :receiver_id_type, :security_code, :document_situation
+    attr_accessor :key, :date, :issuer_id_number, :receiver_id_number, :message, :details, :tax, :total, :number, :receiver_id_type, :security_code, :document_situation, :issuer_id_type
     
     validates :date, presence: true
     validates :issuer_id_number, presence: true, length: {is: 12}
@@ -19,10 +19,13 @@ module FE
     validates :total, presence: true, numericality: true
     validates :number, presence: true
     validates :security_code, presence: true, length: {is: 8}
+    validates :issuer_id_type, presence: true
+    validates :receiver_id_type, presence: true
     
     def initialize(args = {})
       @key = args[:key]
       @date = args[:date]
+      @issuer_id_type = args[:issuer_id_type]
       @issuer_id_number = args[:issuer_id_number]
       @receiver_id_type = args[:receiver_id_type]
       @receiver_id_number = args[:receiver_id_number]
@@ -76,7 +79,7 @@ module FE
         xml.MontoTotalImpuesto @tax.to_f
         xml.TotalFactura @total
         xml.NumeroCedulaReceptor @receiver_id_number
-        xml.NumConsecutivoReceptor sequence
+        xml.NumeroConsecutivoReceptor sequence
       end
       
       builder
@@ -87,16 +90,32 @@ module FE
     end
     
     def api_payload
+      
       payload = {}
       payload[:clave] = @key
       payload[:fecha] = @date.xmlschema
       payload[:emisor] = {
-        tipoIdentificacion: @receiver_id_type,
+        tipoIdentificacion: infer_id_type(@issuer_id_number),
+        numeroIdentificacion: @issuer_id_number
+      }
+      payload[:receptor] = {
+        tipoIdentificacion: infer_id_type(@receiver_id_number),
         numeroIdentificacion: @receiver_id_number
       }
+      payload[:consecutivoReceptor] = sequence
       payload
     end
     
+    def infer_id_type(id_number)
+      if id_number.to_i.to_s.size == 9
+        "01"
+      elsif id_number.to_i.to_s.size == 10
+        "02"
+      elsif id_number.to_i.to_S.size == 11
+        "03"
+      end
+    end
     
   end
+  
 end
