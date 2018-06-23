@@ -88,7 +88,7 @@ module FE
     
     def api_payload
       payload = {}
-      payload[:clave] = key
+      payload[:clave] = @key
       payload[:fecha] = @date.xmlschema
       payload[:emisor] = {
         tipoIdentificacion: @receiver_id_type,
