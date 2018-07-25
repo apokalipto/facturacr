@@ -49,7 +49,7 @@ module FE
           x.Detalle @description
           x.PrecioUnitario @unit_price
           x.MontoTotal @total
-          x.Discount @discount if @discount.present?
+          x.MontoDescuento @discount if @discount.present?
           x.NaturalezaDescuento @discount_reason if @discount_reason.present?
           x.SubTotal @subtotal
           @taxes.each do |tax|
