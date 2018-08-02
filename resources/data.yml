@@ -21,7 +21,7 @@ receiver: &RECEIVER
 document:
   issuer: *ISSUER
   receiver: *RECEIVER
-  number: 100
+  number: 400
   condition: "01"
   credit_term: ~
   items:
@@ -65,7 +65,7 @@ document:
       number: "50601011600310112345600100010100000000011999999999"
       date: "2018-03-31T13:58:57-06:00"
 credit_note:
-  number: 16
+  number: 400
           
       
       

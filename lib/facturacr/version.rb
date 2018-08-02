@@ -1,3 +1,3 @@
 module FE
-  VERSION = "0.1.4"
+  VERSION = "1.0"
 end

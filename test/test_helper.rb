@@ -17,13 +17,14 @@ require 'facturacr/document/reference'
 
 require 'facturacr/invoice'
 require 'facturacr/credit_note'
+require 'facturacr/data_provider'
 require 'facturacr/signer/signer'
-require 'facturacr/signer/noko_signer'
 require 'facturacr/api'
 require 'facturacr/signed_document'
 
 require 'minitest/autorun'
 require 'yaml'
+require 'active_support/core_ext/hash/indifferent_access'
 
 class Minitest::Test
   def build_id_document(type,number)
@@ -57,7 +58,7 @@ class Minitest::Test
   def read_static_data
     if File.exists?("tmp/data.yml")
       data = YAML.load_file("tmp/data.yml")
-      return data
+      return data.with_indifferent_access
     else
       raise "static data file (tmp/data.yml) does not exist."
     end

@@ -5,7 +5,7 @@ Esta librería implementa los procesos de facturación electrónica del Minister
 Actualmente cuenta con las siguientes características:
 
 - Generación de XML
-- Firmado de XML (utilizando JAVA)
+- Firmado de XML (XADES-EPES en ruby y java)
 - Comunicación con el API del ministerio de hacienda
 - Línea de comando para realizar los procesos
 
@@ -71,13 +71,20 @@ FE.configure do |config|
 end
 ```
 
-Para firmar documentos. (Debe tener java instalado)
+Para firmar documentos, existen dos métodos:
+-Con java, se invoca un JAR con 4 argumentos. Este método es muy lento debido a que el proceso principal ejecuta el jar en otro proceso. Fue la primera implementación mientras se desarrollaba la implementación nativa en Ruby.
 ```ruby
-
 	signer = FE::JavaSigner.new FE.configuration.key_path, FE.configuration.key_password, "/path/to/unsigned.xml", "/path/to/signed.xml"
 	signer.sign
 ```
-
+-La implementación nativa en ruby:
+```ruby
+  xml_provider = FE::DataProvider.new :string, "<?xml version="1.0"?><FacturaElectronica> ... </FacturaElectornica>"
+  key_provider = FE::DataProvider.new :file, FE.configuration.key_path
+  signer = FE::Signer.new xml_provider: xml_provider, key_provider: key_provider, pin: FE.configuration.key_password, output_path: "/path/to/signed.xml"
+  signer.sign
+```
+Esta implementación permite además evitar la lectura y escritura de archivos en el disco duro, lo que permite realizar el firmado de manera mucho más rápida.
 
 Para enviar documentos al API
 ```ruby
@@ -169,12 +176,6 @@ Para enviar documentos
 
 	$ facturacr send_document /path/to/signed.xml		
 
-## To Do
-
-- Mejorar y extender la generación de XML
-- Implemntar un mapeo más sencillo para generación de XML
-- Implementar Aceptación y Rechazo
-- Finalizar el firmador en ruby
 
 ## Development
 

@@ -3,29 +3,7 @@ require 'awesome_print'
 require 'facturacr'
 require 'facturacr/cli/generate'
 require 'fileutils'
-=begin
-require 'facturacr/document'
-require 'facturacr/document/fax'
-require 'facturacr/document/identification_document'
-require 'facturacr/document/issuer'
-require 'facturacr/document/receiver'
-require 'facturacr/document/location'
-require 'facturacr/document/phone_type'
-require 'facturacr/document/phone'
-require 'facturacr/document/item'
-require 'facturacr/document/tax'
-require 'facturacr/document/summary'
-require 'facturacr/document/regulation'
-require 'facturacr/document/reference'
 
-require 'facturacr/invoice'
-require 'facturacr/credit_note'
-require 'facturacr/signer/signer'
-require 'facturacr/api'
-require 'facturacr/signed_document'
-require 'facturacr/builder'
-require 'facturacr/xml_document'
-=end
 module FE
   
   module Utils
@@ -56,17 +34,22 @@ module FE
     desc "sign XML_IN XML_OUT", "signs the xml document and stores the signed document in the output path"
     method_option :config_file, aliases: '-c', desc: "default configuration file", default: "tmp/config.yml"
     def sign(xml_in, xml_out)
+      start = Time.now
       FE::Utils.configure(options[:config_file])
-      signer = FE::JavaSigner.new FE.configuration.key_path, FE.configuration.key_password, xml_in, xml_out
-      #signer = FE::NokoSigner.new FE.configuration.key_path, FE.configuration.key_password, xml_in, xml_out
+      
+      key_provider = FE::DataProvider.new(:file, FE.configuration.key_path)
+      document_provider = FE::DataProvider.new(:file, xml_in)
+      signer_args = {xml_provider: document_provider, key_provider: key_provider, pin: FE.configuration.key_password, output_path: xml_out }
+      signer = FE::Signer.new signer_args
       signer.sign
+      puts "Signature: #{Time.now - start} sec.".blue
     end
     
     desc "send_document SIGNED_XML", "sends the SIGNED_XML file to the API"
     method_option :config_file, aliases: '-c', desc: "default configuration file", default: "tmp/config.yml"
     def send_document(path)
       FE::Utils.configure(options[:config_file])
-      xml_document = FE::XmlDocument.new(path)
+      xml_document = FE::XmlDocument.new(DataProvider.new :file, path)
       document = xml_document.document
       signed_document = FE::SignedDocument.new(document,path)
       api = FE::Api.new

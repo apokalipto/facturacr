@@ -42,7 +42,10 @@ class ApiTest < Minitest::Test
     
     File.open('tmp/invoice.xml', 'w'){|f| f.write(invoice.generate)}
     
-    signer = FE::JavaSigner.new FE.configuration.key_path, FE.configuration.key_password, "tmp/invoice.xml", "tmp/out.xml"
+    data_provider = FE::DataProvider.new :string, invoice.generate
+    key_provider = FE::DataProvider.new :string, File.read(FE.configuration.key_path)
+    #signer = FE::JavaSigner.new FE.configuration.key_path, FE.configuration.key_password, "tmp/invoice.xml", "tmp/out.xml"
+    signer = FE::Signer.new xml_provider: data_provider, key_provider: key_provider, pin: FE.configuration.key_password, output_path: "tmp/out.xml"
     signer.sign
     
     signed_document = FE::SignedDocument.new(invoice,"tmp/out.xml")

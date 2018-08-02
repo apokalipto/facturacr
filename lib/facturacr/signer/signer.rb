@@ -5,7 +5,6 @@ require "rexml/xpath"
 
 module FE
   class Signer
-    REXML::Document::entity_expansion_limit = 0
     C14N            = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315" #"http://www.w3.org/2001/10/xml-exc-c14n#"
     DSIG            = "http://www.w3.org/2000/09/xmldsig#"
     NOKOGIRI_OPTIONS = Nokogiri::XML::ParseOptions::STRICT | Nokogiri::XML::ParseOptions::NONET | Nokogiri::XML::ParseOptions::NOENT
@@ -24,137 +23,180 @@ module FE
     XADES           = "http://uri.etsi.org/01903/v1.3.2#"
     XADES141        = "http://uri.etsi.org/01903/v1.4.1#"
     SIGNATURE_POLICY = "https://tribunet.hacienda.go.cr/docs/esquemas/2016/v4/Resolucion%20Comprobantes%20Electronicos%20%20DGT-R-48-2016.pdf"
+        
     
-    
-    def initialize(key_path, key_password,input_xml, output_path=nil)
-      @doc = REXML::Document.new(File.read(input_xml))
-      @doc.context[:attribute_quote] = :quote
-      @doc << REXML::XMLDecl.new(REXML::XMLDecl::DEFAULT_VERSION,REXML::XMLDecl::DEFAULT_ENCODING, REXML::XMLDecl::DEFAULT_STANDALONE)
-      @p12 = OpenSSL::PKCS12.new(File.read("tmp/pruebas.p12"),"8753")
+    def initialize(args = {})
+      document_provider = args[:xml_provider]
+      key_provider = args[:key_provider]
+      pin = args[:pin]
+      raise ArgumentError , "Los argumentos no son válidos" if document_provider.nil? || key_provider.nil? || pin.nil?
+      @doc = Nokogiri::XML(document_provider.contents) do |config|
+        config.options = Nokogiri::XML::ParseOptions::NOBLANKS | Nokogiri::XML::ParseOptions::NOENT | Nokogiri::XML::ParseOptions::NOENT
+      end
+      @p12 = OpenSSL::PKCS12.new(key_provider.contents,args[:pin])
       @x509 = @p12.certificate
-      @output_path = output_path
+      @output_path = args[:output_path]
     end
-    
+        
     def sign
       #Build parts for Digest Calculation
       key_info = build_key_info_element
       signed_properties = build_signed_properties_element
       signed_info_element = build_signed_info_element(key_info,signed_properties)
+      
       # Compute Signature
       signed_info_canon = canonicalize_document(signed_info_element)
       signature_value = compute_signature(@p12.key,algorithm(RSA_SHA256).new,signed_info_canon)
+                  
+      ds = Nokogiri::XML::Node.new("ds:Signature", @doc)
+      ds["xmlns:ds"] = DSIG
+      #ds["Id"] = SIGNATURE_ID#"xmldsig-#{uuid}"
+      ds["Id"] = "xmldsig-#{uuid}"
+      #ds.add_child(Nokogiri::XML(signed_info_without_ns).root)
+      ds.add_child(signed_info_element.root)
       
-      # delete parts namespaces
-      delete_namespaces(signed_info_element)
-      delete_namespaces(key_info)
-      delete_namespaces(signed_properties)
+      sv = Nokogiri::XML::Node.new("ds:SignatureValue", @doc)
+      #sv["Id"] = SIGNATURE_VALUE#"xmldsig-#{uuid}-sigvalue"
+      sv["Id"] = "xmldsig-#{uuid}-sigvalue"
+      sv.content = signature_value
+      ds.add_child(sv)
       
-      # Created Signature element and add parts
-      signature_element = REXML::Element.new("ds:Signature").add_namespace('ds', DSIG)
-      signature_element.add_attribute("Id","xmldsig-#{uuid}")
+      ds.add_child(key_info.root)
       
-      signature_element.add_element(signed_info_element)
-      signature_element.add_element("ds:SignatureValue","Id"=>"xmldsig-#{uuid}-sigvalue").text = signature_value
-      signature_element.add_element(key_info)
       
-      object = signature_element.add_element("ds:Object")
-      qualifying_properties = object.add_element("xades:QualifyingProperties", {"Target"=>"#xmldsig-#{uuid}"})
-      qualifying_properties.add_namespace("xades", XADES)
-      qualifying_properties.add_namespace("xades141", XADES141)
+      dsobj = Nokogiri::XML::Node.new("ds:Object",@doc)
+      dsobj["Id"] = "xades-obj-#{uuid}"#XADES_OBJECT_ID
+      qp = Nokogiri::XML::Node.new("xades:QualifyingProperties",@doc)
+      qp["xmlns:xades"] = XADES
+      #qp["Target"] = "##{SIGNATURE_ID}"#"#xmldsig-#{uuid}"
+      qp["Target"] = "#xmldsig-#{uuid}"
+      qp["Id"] = "QualifyingProperties-#{uuid}"
+      qp.add_child(signed_properties.root)
       
-      qualifying_properties.add_element(signed_properties)
+      dsobj.add_child(qp)
+      ds.add_child(dsobj)
+      @doc.root.add_child(ds)
       
-      @doc.root.add_element(signature_element)
+      File.open(@output_path,"w"){|f| f.write(@doc.to_xml(:save_with=>Nokogiri::XML::Node::SaveOptions::AS_XML).gsub(/\r|\n/,""))} if @output_path
       
-      File.open(@output_path,"w"){|f| f.write(@doc.to_s)} if @output_path
-      
-      @doc
+      @doc.to_xml(:save_with=>Nokogiri::XML::Node::SaveOptions::AS_XML).gsub(/\r|\n/,"")
     end
     
+    
     private
+    
+    def build_key_info_element
+      builder  = Nokogiri::XML::Builder.new
+      attributes = {
+        "xmlns" => "https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/facturaElectronica",
+        "xmlns:ds" => "http://www.w3.org/2000/09/xmldsig#",
+        "xmlns:xsd" => "http://www.w3.org/2001/XMLSchema",
+        "xmlns:xsi" => "http://www.w3.org/2001/XMLSchema-instance",
+        "Id"=>"xmldsig-#{uuid}-keyinfo"
+      }
+      
+      builder.send("ds:KeyInfo", attributes) do |ki|
+        ki.send("ds:X509Data") do |kd|
+          kd.send("ds:X509Certificate", @x509.to_pem.to_s.gsub("-----BEGIN CERTIFICATE-----","").gsub("-----END CERTIFICATE-----","").gsub(/\n|\r/, ""))
+        end
+        ki.send("ds:KeyValue") do |kv|
+          kv.send("ds:RSAKeyValue") do |rv|
+            rv.send("ds:Modulus", Base64.encode64(@x509.public_key.params["n"].to_s(2)).gsub("\n",""))
+            rv.send("ds:Exponent", Base64.encode64(@x509.public_key.params["e"].to_s(2)).gsub("\n",""))
+          end
+        end
+      end
+      builder.doc
+    end
     
     def build_signed_properties_element
       cert_digest = compute_digest(@x509.to_der,algorithm(SHA256))
       policy_digest = compute_digest(@x509.to_der,algorithm(SHA256))
-      signing_time = DateTime.now
+      signing_time = DateTime.now.rfc3339
+      builder  = Nokogiri::XML::Builder.new
+      attributes = {
+        "xmlns"=>"https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/facturaElectronica",
+        "xmlns:ds" => "http://www.w3.org/2000/09/xmldsig#",
+        "xmlns:xades" => "http://uri.etsi.org/01903/v1.3.2#",
+        "xmlns:xsd" => "http://www.w3.org/2001/XMLSchema",
+        "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
+        "Id" => "xmldsig-#{uuid}-signedprops"
+      }
+      builder.send("xades:SignedProperties", attributes) do |sp|
+        sp.send("xades:SignedSignatureProperties") do |ssp|
+          ssp.send("xades:SigningTime", signing_time)
+          ssp.send("xades:SigningCertificate") do |sc|
+            sc.send("xades:Cert") do |c|
+              c.send("xades:CertDigest") do |xcd|
+                xcd.send("ds:DigestMethod", {"Algorithm"=>SHA256})
+                xcd.send("ds:DigestValue", cert_digest)
+              end
+              c.send("xades:IssuerSerial") do |is|
+                is.send("ds:X509IssuerName", @x509.issuer.to_a.reverse.map{|c| c[0..1].join("=")}.join(", "))
+                is.send("ds:X509SerialNumber", @x509.serial.to_s)
+              end
+            end
+          end
+          
+          ssp.send("xades:SignaturePolicyIdentifier") do |spi|
+            spi.send("xades:SignaturePolicyId") do |spi2|
+              spi2.send("xades:SigPolicyId") do |spi3|
+                spi3.send("xades:Identifier", SIGNATURE_POLICY)
+                spi3.send("xades:Description")
+              end
+              
+              spi2.send("xades:SigPolicyHash") do |sph|
+                sph.send("ds:DigestMethod", {"Algorithm"=>"http://www.w3.org/2000/09/xmldsig#sha1"})
+                sph.send("ds:DigestValue", "V8lVVNGDCPen6VELRD1Ja8HARFk=")
+              end
+            end
+          end
+          
+        end
+        sp.send("xades:SignedDataObjectProperties") do |sdop|
+          sdop.send("xades:DataObjectFormat", {"ObjectReference"=>"#xmldsig-#{uuid}-ref0"}) do |dof|
+            dof.send("xades:MimeType","text/xml")
+            dof.send("xades:Encoding", "UTF-8")
+          end
+        end
+      end
       
-      element = REXML::Element.new("xades:SignedProperties",nil,{:attribute_quote=>:quote})
-      element.add_namespace("https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/facturaElectronica")
-      element.add_namespace("ds","http://www.w3.org/2000/09/xmldsig#")
-      element.add_namespace("xades","http://uri.etsi.org/01903/v1.3.2#")
-      element.add_namespace("xsd","http://www.w3.org/2001/XMLSchema")
-      element.add_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
-      element.add_namespace("xades141", XADES141)
-      element.add_attribute("Id","xmldsig-#{uuid}-signedprops")
-  
-      element.add_element("xades:SigningTime").text = signing_time.rfc3339
-      signing_certificate_elem = element.add_element("xades:SigningCertificate")
-      cert_elem = signing_certificate_elem.add_element("xades:Cert")
-      cert_digest_elem = cert_elem.add_element("xades:CertDigest")
-      cert_digest_elem.add_element("ds:DigestMethod", {"Algorithm"=>SHA256})
-      cert_digest_elem.add_element("ds:DigestValue").text = cert_digest
-
-      issuer_serial = cert_elem.add_element("xades:IssuerSerial")
-      issuer_serial.add_element("ds:X509IssuerName").text = @x509.issuer.to_a.reverse.map{|c| c[0..1].join("=")}.join(", ")
-      issuer_serial.add_element("ds:X509SerialNumber").text = @x509.serial.to_s
-
-      policy_elem = element.add_element("xades:SignaturePolicyIdentifier")
-      policy_id_elem = policy_elem.add_element("xades:SignaturePolicyId")
-      sig_policy_id = policy_id_elem.add_element("xades:SigPolicyId")
-      sig_policy_id.add_element("xades:Identifier").text = SIGNATURE_POLICY
-
-      policy_hash  = sig_policy_id.add_element("xades:SigPolicyHash")
-      policy_hash.add_element("ds:DigestMethod", {"Algorithm"=>"http://www.w3.org/2000/09/xmldsig#sha1"})
-      policy_hash.add_element("ds:DigestValue").text = "V8lVVNGDCPen6VELRD1Ja8HARFk="#policy_digest
-      
-      element
-    end
-    
-    def build_key_info_element
-      key_info = REXML::Element.new("ds:KeyInfo",nil,{:attribute_quote=>:quote})
-      key_info.add_namespace("https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/facturaElectronica")
-      key_info.add_namespace("ds","http://www.w3.org/2000/09/xmldsig#")
-      key_info.add_namespace("xsd","http://www.w3.org/2001/XMLSchema")
-      key_info.add_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
-  
-      key_info.add_attribute("Id","xmldsig-#{uuid}-keyinfo")
-      x509_data = key_info.add_element("ds:X509Data")
-      x509_data.add_element("ds:X509Certificate").text = @x509.to_pem.to_s.gsub("-----BEGIN CERTIFICATE-----","").gsub("-----END CERTIFICATE-----","").gsub(/\n|\r/, "")
-      key_value = key_info.add_element("ds:KeyValue")
-      rsa_value = key_value.add_element("ds:RSAKeyValue")
-      rsa_value.add_element("ds:Modulus").text = Base64.encode64(@x509.public_key.params["n"].to_s(2)).gsub("\n","")
-      rsa_value.add_element("ds:Exponent").text = Base64.encode64(@x509.public_key.params["e"].to_s(2)).gsub("\n","")
-      key_info
+      builder.doc
     end
     
     def build_signed_info_element(key_info_element, signed_props_element)
       
-      signed_info_element = REXML::Element.new("ds:SignedInfo",nil,{:attribute_quote=>:quote})
-      signed_info_element.add_namespace("https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/facturaElectronica")
-      signed_info_element.add_namespace("ds","http://www.w3.org/2000/09/xmldsig#")
-      signed_info_element.add_namespace("xsd","http://www.w3.org/2001/XMLSchema")
-      signed_info_element.add_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
-      signed_info_element.add_element("ds:CanonicalizationMethod", { "Algorithm"=>C14N })
-      signed_info_element.add_element("ds:SignatureMethod", {"Algorithm"=>RSA_SHA256})
+      builder = builder  = Nokogiri::XML::Builder.new
+      attributes = {
+        "xmlns"=>"https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/facturaElectronica",
+        "xmlns:ds" => "http://www.w3.org/2000/09/xmldsig#",
+        "xmlns:xsd" => "http://www.w3.org/2001/XMLSchema",
+        "xmlns:xsi" => "http://www.w3.org/2001/XMLSchema-instance"
+      }
+      builder.send("ds:SignedInfo", attributes) do |si|
+        si.send("ds:CanonicalizationMethod", { "Algorithm"=>C14N })
+        si.send("ds:SignatureMethod", {"Algorithm"=>RSA_SHA256})
+
+        si.send("ds:Reference",{"Id"=>"xmldsig-#{uuid}-ref0", "URI"=>""}) do |r|
+          r.send("ds:Transforms") do |t|
+            t.send("ds:Transform", {"Algorithm"=>ENVELOPED_SIG})
+          end
+          r.send("ds:DigestMethod", {"Algorithm"=> SHA256})
+          r.send("ds:DigestValue", digest_document(@doc,SHA256))
+        end
+        si.send("ds:Reference",{"Id"=>"xmldsig-#{uuid}-ref1", "URI"=>"#xmldsig-#{uuid}-keyinfo"}) do |r|
+          r.send("ds:DigestMethod", {"Algorithm"=> SHA256})
+          r.send("ds:DigestValue", digest_document(key_info_element, SHA256, true))
+        end
+                
+        si.send("ds:Reference",{"Type"=>"http://uri.etsi.org/01903#SignedProperties", "URI"=>"#xmldsig-#{uuid}-signedprops"}) do |r|
+          r.send("ds:DigestMethod", {"Algorithm"=> SHA256})
+          r.send("ds:DigestValue", digest_document(signed_props_element, SHA256, true))
+        end
+      end
       
-      # Add Ref0
-      ref0 = signed_info_element.add_element("ds:Reference",{"Id"=>"xmldsig-#{uuid}-ref0"})
-      transforms = ref0.add_element("ds:Transforms")
-      transform = transforms.add_element("ds:Transform", {"Algorithm"=>ENVELOPED_SIG})
-      digest_method_element = ref0.add_element("ds:DigestMethod", {"Algorithm"=> SHA256})
-      ref0.add_element("ds:DigestValue").text = digest_document(@doc,SHA256)
-      
-      # Add KeyInfo Ref
-      ref_key_info = signed_info_element.add_element("ds:Reference",{"URI"=>"#xmldsig-#{uuid}-keyinfo"})
-      ref_key_info.add_element("ds:DigestMethod", {"Algorithm"=> SHA256})
-      ref_key_info.add_element("ds:DigestValue").text = digest_document(key_info_element, SHA256, true)
-      
-      # Add SignedProps Ref
-      ref_props = signed_info_element.add_element("ds:Reference",{"URI"=>"#xmldsig-#{uuid}-signedprops", "Type"=>"http://uri.etsi.org/01903#SignedProperties"})
-      ref_props.add_element("ds:DigestMethod", {"Algorithm"=> SHA256})
-      ref_props.add_element("ds:DigestValue").text = digest_document(signed_props_element, SHA256,true)
-      
-      signed_info_element
+            
+      builder.doc
     end
     
     def digest_document(doc, digest_algorithm=SHA256, strip=false)
@@ -162,21 +204,9 @@ module FE
     end
     
     def canonicalize_document(doc,strip=false)
-      doc = doc.to_s if doc.is_a?(REXML::Element)
-      doc.strip! if strip
-      doc.encode("UTF-8")
-      noko = Nokogiri::XML(doc) do |config|
-        config.options = NOKOGIRI_OPTIONS
-      end
-      
-      noko.canonicalize(canon_algorithm(C14N),NAMESPACES.split(" "))
+      doc.canonicalize(canon_algorithm(C14N),NAMESPACES.split(" "))
     end
     
-    def delete_namespaces(element)
-      NAMESPACES.split(" ").each do |ns|
-        element.delete_namespace(ns)
-      end
-    end
     
     def uuid
       @uuid ||= SecureRandom.uuid
@@ -184,9 +214,7 @@ module FE
     
     def canon_algorithm(element)
      algorithm = element
-     if algorithm.is_a?(REXML::Element)
-       algorithm = element.attribute('Algorithm').value
-     end
+     
 
      case algorithm
        when "http://www.w3.org/TR/2001/REC-xml-c14n-20010315",
@@ -204,6 +232,8 @@ module FE
      algorithm = element
      if algorithm.is_a?(REXML::Element)
        algorithm = element.attribute("Algorithm").value
+     elsif algorithm.is_a?(Nokogiri::XML::Element)
+       algorithm = element.xpath("//@Algorithm", "xmlns:ds" => "http://www.w3.org/2000/09/xmldsig#").first.value
      end
 
      algorithm = algorithm && algorithm =~ /(rsa-)?sha(.*?)$/i && $2.to_i
@@ -218,14 +248,14 @@ module FE
     end
 
     def compute_signature(private_key, signature_algorithm, document)
-      Base64.encode64(private_key.sign(signature_algorithm, document)).gsub(/\n/, "")
+      Base64.encode64(private_key.sign(signature_algorithm, document)).gsub(/\r|\n/, "")
     end
 
     def compute_digest(document, digest_algorithm)
      digest = digest_algorithm.digest(document)
      Base64.encode64(digest).strip!
     end
-    
+     
   end
   
   class JavaSigner

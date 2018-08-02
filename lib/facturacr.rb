@@ -11,8 +11,8 @@ require 'facturacr/xml_document'
 require 'facturacr/api'
 require 'facturacr/builder'
 require 'facturacr/version'
+require 'facturacr/data_provider'
 require 'facturacr/signer/signer'
-require 'facturacr/signer/noko_signer'
 require 'facturacr/reception_message'
 
 module FE

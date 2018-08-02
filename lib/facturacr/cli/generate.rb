@@ -11,6 +11,7 @@ module FE
       method_option :data_path, default: "tmp/data.yml"
       method_option :output_path, desc: "path to save the output"     
       def invoice
+        start = Time.now
         data = YAML.load_file(options[:data_path]).with_indifferent_access
         builder = FE::Builder.new
         
@@ -27,6 +28,8 @@ module FE
         write(invoice, output_path)
         print_details(invoice)
         sign(output_path, options) if options[:sign]
+        end_at = Time.now
+        puts "Total Time: #{end_at - start} sec."
         send_document("#{output_path}.signed.xml") if options[:sign] && options[:send]
         
       end
@@ -140,7 +143,7 @@ module FE
       method_option :document_situation, desc: "the situation of the document", default: "1"
       method_option :config_file, aliases: '-c', desc: "default configuration file", default: "tmp/config.yml"
       def reception_message
-        doc = XmlDocument.new(options[:xml_in]) 
+        doc = XmlDocument.new(DataProvider.new(:file, options[:xml_in]))
         
         builder = FE::Builder.new
       
