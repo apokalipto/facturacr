@@ -19,13 +19,13 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "bundler", "~> 1.10"
   spec.add_development_dependency "rake", "~> 10.0"
-  spec.add_development_dependency "minitest"
-  spec.add_development_dependency "minitest-colorize"
+  spec.add_development_dependency "minitest", '~> 5.11'
+  spec.add_development_dependency "minitest-colorize", '~> 0.0'
   
-  spec.add_dependency 'rest-client'
-  spec.add_dependency 'nokogiri'
-  spec.add_dependency 'colorize'
-  spec.add_dependency 'thor'
-  spec.add_dependency 'activemodel'
-  spec.add_dependency 'awesome_print'
+  spec.add_dependency 'rest-client', '~> 2.0'
+  spec.add_dependency 'nokogiri', '~> 1.8'
+  spec.add_dependency 'colorize', '~> 0.8'
+  spec.add_dependency 'thor', '~> 0.20'
+  spec.add_dependency 'activemodel', '>= 3.2'
+  spec.add_dependency 'awesome_print', '~> 1.8'
 end
