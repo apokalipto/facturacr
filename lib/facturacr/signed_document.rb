@@ -8,7 +8,7 @@ module FE
       # Backwards compatibility with v0.1.4
       if xml_provider.is_a?(String)
         raise ArgumentError, "File: #{xml_provider} does not exist" unless File.exists?(xml_provider)
-        xml_provider = Fe::DataProvider.new(:file, xml_provider)
+        xml_provider = FE::DataProvider.new(:file, xml_provider)
       end
       raise ArgumentError, "Invalid Argument" unless xml_provider.is_a?(FE::DataProvider)
       
