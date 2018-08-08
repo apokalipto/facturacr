@@ -23,7 +23,14 @@ module FE
     XADES           = "http://uri.etsi.org/01903/v1.3.2#"
     XADES141        = "http://uri.etsi.org/01903/v1.4.1#"
     SIGNATURE_POLICY = "https://tribunet.hacienda.go.cr/docs/esquemas/2016/v4/Resolucion%20Comprobantes%20Electronicos%20%20DGT-R-48-2016.pdf"
-        
+    
+    XMLNS_MAP = {
+      "FacturaElectronica" => "https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/facturaElectronica",
+      "NotaCreditoElectronica" => "https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/notaCreditoElectronica",
+      "TiqueteElectronico" => "https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/tiqueteElectronico",
+      "NotaDebitoElectronica" => "https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/notaDebitoElectronica",
+      "MensajeReceptor" => "https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/mensajeReceptor"
+    }   
     
     def initialize(args = {})
       document_provider = args[:xml_provider]
@@ -36,6 +43,7 @@ module FE
       @p12 = OpenSSL::PKCS12.new(key_provider.contents,args[:pin])
       @x509 = @p12.certificate
       @output_path = args[:output_path]
+      @document_tag = @doc.elements.first.name
     end
         
     def sign
@@ -88,7 +96,7 @@ module FE
     def build_key_info_element
       builder  = Nokogiri::XML::Builder.new
       attributes = {
-        "xmlns" => "https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/facturaElectronica",
+        "xmlns" => XMLNS_MAP[@document_tag],
         "xmlns:ds" => "http://www.w3.org/2000/09/xmldsig#",
         "xmlns:xsd" => "http://www.w3.org/2001/XMLSchema",
         "xmlns:xsi" => "http://www.w3.org/2001/XMLSchema-instance",
@@ -115,7 +123,7 @@ module FE
       signing_time = DateTime.now.rfc3339
       builder  = Nokogiri::XML::Builder.new
       attributes = {
-        "xmlns"=>"https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/facturaElectronica",
+        "xmlns"=>XMLNS_MAP[@document_tag],
         "xmlns:ds" => "http://www.w3.org/2000/09/xmldsig#",
         "xmlns:xades" => "http://uri.etsi.org/01903/v1.3.2#",
         "xmlns:xsd" => "http://www.w3.org/2001/XMLSchema",
@@ -168,7 +176,7 @@ module FE
       
       builder = builder  = Nokogiri::XML::Builder.new
       attributes = {
-        "xmlns"=>"https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/facturaElectronica",
+        "xmlns"=>XMLNS_MAP[@document_tag],
         "xmlns:ds" => "http://www.w3.org/2000/09/xmldsig#",
         "xmlns:xsd" => "http://www.w3.org/2001/XMLSchema",
         "xmlns:xsi" => "http://www.w3.org/2001/XMLSchema-instance"
