@@ -42,7 +42,7 @@ module FE
     attr_accessor :serial, :date, :issuer, :receiver, :condition, :credit_term, 
                   :payment_type, :service_type, :reference_information, 
                   :regulation, :number, :document_type, :security_code, 
-                  :items, :references, :namespaces, :summary, :document_situation
+                  :items, :references, :namespaces, :summary, :document_situation, :headquarters, :terminal
     
     validates :date, presence: true
     validates :number, presence: true
