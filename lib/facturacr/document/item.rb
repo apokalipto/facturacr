@@ -2,13 +2,17 @@ module FE
   class Document
     class Item
       include ActiveModel::Validations
-      
+
+      UNITS = %w[Sp m kg s A K mol cd m² m³ m/s m/s² 1/m kg/m³ A/m² A/m mol/m³ cd/m² 1 rad sr Hz N Pa J W C V F Ω S Wb T H °C lm
+                 lx Bq Gy Sv kat Pa·s N·m N/m rad/s rad/s² W/m² J/K J/(kg·K) J/kg W/(m·K) J/m³ V/m C/m³ C/m² F/m H/m J/mol J/(mol·K)
+                 C/kg Gy/s W/sr W/(m²·sr) kat/m³ min h d º ´ ´´ L t Np B eV u ua Unid Gal g Km ln cm mL mm Oz Otros].freeze
+
       attr_accessor :line_number, :code, :quantity, :unit, :description, :unit_price, :total,
                     :discount, :discount_reason, :subtotal, :taxes, :net_total
-                    
+
       validates :line_number, presence: true
       validates :quantity, presence: true, numericality: {greater_than: 0}
-      validates :unit, presence: true
+      validates :unit, presence: true, inclusion: UNITS
       validates :description, presence: true, length: {maximum: 160 }
       validates :unit_price, presence: true
       validates :total, presence: true
@@ -16,8 +20,8 @@ module FE
       validates :discount_reason, presence: true, if: ->{ discount.present? }
       validates :subtotal, presence: true
       validates :net_total, presence: true
-      
-      
+
+
       def initialize(args={})
         @line_number = args[:line_number]
         @code = args[:code]
@@ -32,7 +36,7 @@ module FE
         @taxes = args[:taxes] || []
         @net_total = args[:net_total]
       end
-      
+
       def build_xml(node)
         raise "Item invalid: #{errors.messages}" unless valid?
         node = Nokogiri::XML::Builder.new if node.nil?
