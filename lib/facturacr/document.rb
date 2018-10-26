@@ -141,7 +141,7 @@ module FE
         tipoIdentificacion: @issuer.identification_document.document_type,
         numeroIdentificacion: @issuer.identification_document.id_number
       }
-      if @receiver.identification_document.present?
+      if @receiver&.identification_document.present?
         payload[:receptor] = {
           tipoIdentificacion: @receiver.identification_document.document_type,
           numeroIdentificacion: @receiver.identification_document.id_number
