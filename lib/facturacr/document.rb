@@ -98,7 +98,7 @@ module FE
   
     def build_xml
       raise "Documento inválido: #{errors.messages}" unless valid?
-      builder  = Nokogiri::XML::Builder.new
+      builder  = Nokogiri::XML::Builder.new(encoding: 'UTF-8')
       
       builder.send(document_tag, @namespaces) do |xml|
         xml.Clave key
