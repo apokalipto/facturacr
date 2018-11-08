@@ -22,6 +22,12 @@ module FE
       attr_accessor :code, :rate, :total, :exoneration
       
       validates :code, presence: true, inclusion: TAX_CODES.keys
+      # It is a mandatory field when a tax is added. And it is a decimal number that can be composed of 4 integers and 2 decimals
+      validates :rate, presence: true, format: { with: /\A\d{1,4}(\.\d{0,2})?\z/ }
+      # It is a mandatory field when a tax is added, it is obtained from the multiplication of the "subtotal" field by "tax rate"
+      # And is a decimal number that can be composed of 13 integers and 5 decimals
+      validates :total, presence: true, format: { with: /\A\d{1,13}(\.\d{0,5})?\z/ }
+
       def initialize(args={})
         @code = args[:code]
         @rate = args[:rate]

@@ -29,7 +29,7 @@ module FE
       
       def build_xml(node)
         unless valid?
-          raise "Summary invalid: #{errors.messages}" 
+          raise "Summary invalid: #{errors.messages}"
         end        
         node = Nokogiri::XML::Builder.new if node.nil?
         
@@ -53,11 +53,11 @@ module FE
       private
       
       def totals_ok?
-        errors[:taxable_total] << "invalid amount" if (@taxable_total - (@services_taxable_total + @goods_taxable_total).round(5)).abs > 0.0005
-        errors[:exent_total] << "invalid amount" if (@exent_total - (@services_exent_total + @goods_exent_total).round(5)).abs > 0.0005
-        errors[:subtotal] << "invalid amount" if (@subtotal - (@taxable_total + @exent_total).round(5)).abs > 0.0005
-        errors[:gross_total] << "invalid amount" if (@gross_total - (@subtotal - @discount_total).round(5)).abs > 0.0005
-        errors[:net_total] << "invalid amount" if (@net_total - (@gross_total + @tax_total).round(5)).abs > 0.0005
+        errors.add :taxable_total, :invalid_amount, message: 'invalid amount' if (@taxable_total - (@services_taxable_total + @goods_taxable_total).round(5)).abs > 0.0005
+        errors.add :exent_total, :invalid_amount, message: 'invalid amount' if (@exent_total - (@services_exent_total + @goods_exent_total).round(5)).abs > 0.0005
+        errors.add :subtotal, :invalid_amount, message: 'invalid amount' if (@subtotal - (@taxable_total + @exent_total).round(5)).abs > 0.0005
+        errors.add :gross_total, :invalid_amount, message: 'invalid amount' if (@gross_total - (@subtotal - @discount_total).round(5)).abs > 0.0005
+        errors.add :net_total, :invalid_amount, message: 'invalid amount' if (@net_total - (@gross_total + @tax_total).round(5)).abs > 0.0005
       end
     end
   end
