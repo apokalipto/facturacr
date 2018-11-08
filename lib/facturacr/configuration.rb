@@ -24,7 +24,7 @@ module FE
       @key_password = "test123"
       @api_client_id = 'api-stag'
       @documents_endpoint = "https://api.comprobanteselectronicos.go.cr/recepcion-sandbox/v1"
-      @authentication_endpoint = "https://idp.comprobanteselectronicos.go.cr/auth/realms/rut-stag/protocol/openid-connect/token"
+      @authentication_endpoint = "https://idp.comprobanteselectronicos.go.cr/auth/realms/rut-stag/protocol/openid-connect"
     end
     
     def read_config_file

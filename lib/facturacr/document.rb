@@ -12,7 +12,7 @@ module FE
       "05"=>"Arrendamiento con Opción de Compra", 
       "06"=>"Arrendamiento en Función Financiera",
       "99"=>"Otros"
-    }
+    }.freeze
     PAYMENT_TYPES = {
       "01"=>"Efectivo",
       "02"=>"Tarjeta",
@@ -20,7 +20,7 @@ module FE
       "04"=>"Transferencia",
       "05"=>"Recaudado por Terceros",
       "99"=>"Otros"
-    }
+    }.freeze
     DOCUMENT_TYPES = {
       "01"=> "Factura Electronica",
       "02"=> "Nota de débito",
@@ -32,12 +32,12 @@ module FE
       "08"=> "Comprobante Emitido en Contingencia",
       "99"=> "Otros"
       
-    }
+    }.freeze
     DOCUMENT_SITUATION = {
       "1" => "Normal",
       "2" => "Contingencia",
       "3" => "Sin Internet"
-    }
+    }.freeze
   
     attr_accessor :serial, :date, :issuer, :receiver, :condition, :credit_term, 
                   :payment_type, :service_type, :reference_information, 

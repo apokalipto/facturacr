@@ -41,7 +41,7 @@ module FE
           node.Receptor do |xml|
             xml.Nombre @name
             @identification_document.build_xml(xml) if @identification_document.present?
-            xml.IdentificacionExtranjer foreign_id_number if @foreign_id_number.present?
+            xml.IdentificacionExtranjero foreign_id_number if @foreign_id_number.present?
             xml.NombreComercial @comercial_name if @comercial_name.present?
             @location.build_xml(xml) if @location.present?
             @phone.build_xml(xml) if @phone.present?

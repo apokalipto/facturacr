@@ -7,7 +7,7 @@ require 'json'
 module FE
   class Api
     
-    attr_accessor :authentication_endpoint, :document_endpoint, :username, :password, :client_id, :errors, :check_location
+    attr_accessor :authentication_endpoint, :document_endpoint, :username, :password, :client_id, :errors, :check_location, :refresh_token
     
     def initialize(configuration = nil)
       @authentication_endpoint = (configuration || FE.configuration).authentication_endpoint
@@ -19,13 +19,32 @@ module FE
     end
     
     def authenticate
-      response = RestClient.post @authentication_endpoint, auth_data
-      @token = JSON.parse(response)["access_token"]
+      # Backwards compantibility with configurations that still use contain the token operation in the url.
+      url = @authentication_endpoint
+      if !@authentication_endpoint.end_with?('token')
+        url += "/token"
+      end
+      response = RestClient.post url, auth_data
+      json = JSON.parse(response)
+      @token = json["access_token"]
+      @refresh_token = json["refresh_token"]
       
       @token
     rescue => e
       puts "AUTH ERROR: #{e.message}".red
       raise e
+    end
+    
+    def logout
+      url = @authentication_endpoint
+      if @authentication_endpoint.end_with?('token')
+        url.gsub!("token","logout")
+      else
+        url += "/logout"
+      end
+      response = RestClient.post url, logout_data
+    rescue => e
+      puts "LOGOUT ERROR: #{e.message}".red
     end
     
         
@@ -73,6 +92,13 @@ module FE
         password: @password,
         client_secret: '',
         scope: ''
+      }
+    end
+    
+    def logout_data
+      {
+        client_id: @client_id,
+        refresh_token: @refresh_token
       }
     end
   end

@@ -8,7 +8,8 @@ module FE
       "1" => "Aceptado",
       "2" => "Aceptacion Parcial",
       "3" => "Rechazado"
-    }
+    }.freeze
+    
     attr_accessor :key, :date, :issuer_id_number, :receiver_id_number, :message, :details, :tax, :total, :number, :receiver_id_type, :security_code, :document_situation, :issuer_id_type
     
     validates :date, presence: true
@@ -76,7 +77,7 @@ module FE
         xml.FechaEmisionDoc @date.xmlschema
         xml.Mensaje @message
         xml.DetalleMensaje @details if @details
-        xml.MontoTotalImpuesto @tax.to_f
+        xml.MontoTotalImpuesto @tax.to_f if @tax
         xml.TotalFactura @total
         xml.NumeroCedulaReceptor @receiver_id_number
         xml.NumeroConsecutivoReceptor sequence
@@ -111,7 +112,7 @@ module FE
         "01"
       elsif id_number.to_i.to_s.size == 10
         "02"
-      elsif id_number.to_i.to_S.size == 11
+      elsif id_number.to_i.to_s.size == 11
         "03"
       end
     end

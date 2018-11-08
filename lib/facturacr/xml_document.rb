@@ -182,5 +182,9 @@ module FE
         @document.tax = @doc.css("#{root_tag} MontoTotalImpuesto").text
       end      
     end
+    
+    def has_tax_node?
+      @doc.css("#{root_tag} ResumenFactura TotalImpuesto").any?
+    end
   end
 end

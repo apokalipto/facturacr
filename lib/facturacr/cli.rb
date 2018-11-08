@@ -26,6 +26,8 @@ module FE
       api = FE::Api.new
       document_status = api.get_document_status(key)
       ap document_status.to_h
+      puts "  (check)=> API Logout"
+      api.logout
     end
     
     desc "generate DOCUMENT ARGS", "generate xml documents"
@@ -70,6 +72,8 @@ module FE
         ap api.errors
         raise "Sending Document Error" 
       end  
+      puts "  (send)=> API Logout"
+      api.logout
     end
     
         
