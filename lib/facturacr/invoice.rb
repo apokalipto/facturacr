@@ -24,6 +24,7 @@ module FE
         "xmlns"=>"https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/facturaElectronica"#,
         #"xsi:schemaLocation"=>"https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/facturaElectronica https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/facturaElectronica.xsd"
       }
+      @others = args[:others] || []
     end
     
     def document_tag

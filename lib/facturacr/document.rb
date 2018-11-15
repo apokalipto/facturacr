@@ -42,7 +42,8 @@ module FE
     attr_accessor :serial, :date, :issuer, :receiver, :condition, :credit_term, 
                   :payment_type, :service_type, :reference_information, 
                   :regulation, :number, :document_type, :security_code, 
-                  :items, :references, :namespaces, :summary, :document_situation, :headquarters, :terminal
+                  :items, :references, :namespaces, :summary, :document_situation, 
+                  :headquarters, :terminal, :others
     
     validates :date, presence: true
     validates :number, presence: true
@@ -123,6 +124,14 @@ module FE
           end
         end
         
+        if others.any?
+          xml.Otros do |x|
+            @others.each do |o|
+              o.build_xml(x)
+            end
+          end
+        end
+        
         regulation.build_xml(xml)
       end
       
@@ -170,3 +179,4 @@ require 'facturacr/document/reference'
 require 'facturacr/document/regulation'
 require 'facturacr/document/summary'
 require 'facturacr/document/tax'
+require 'facturacr/document/other_text'

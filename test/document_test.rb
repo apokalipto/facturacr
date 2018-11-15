@@ -17,10 +17,11 @@ class DocumentTest < Minitest::Test
     taxes = [FE::Document::Tax.new(code: "01", rate: 13, total: (100 * 0.13))]
     items << FE::Document::Item.new(code: "002", line_number: 2, quantity: 2, unit: "Unid", description: "Impresora de POS", unit_price: 50, total: 100, taxes: taxes, net_total: 113, subtotal: 100)
     summary = FE::Document::Summary.new currency: "USD", exchange_rate: 575, services_exent_total: 100, goods_taxable_total: 100, exent_total: 100, taxable_total: 100, subtotal: 200, gross_total: 200, tax_total: 13, net_total: 213
-        
-    invoice = FE::Invoice.new date: Time.now, issuer: issuer, receiver: receiver, number: 1, items: items, condition: "01", summary: summary, security_code: "12345678", document_situation: "1"
     
-    # Para generar el XML
+    others = [FE::Document::OtherText.new(xml_attributes: {"code"=>"my123456"}, content: "This is the custom value")]
+     
+    invoice = FE::Invoice.new date: Time.now, issuer: issuer, receiver: receiver, number: 1, items: items, condition: "01", summary: summary, security_code: "12345678", document_situation: "1", others: others
+    s
     invoice.generate
   end
 end

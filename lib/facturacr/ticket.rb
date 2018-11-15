@@ -23,6 +23,7 @@ module FE
         "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
         "xmlns"=>"https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/tiqueteElectronico"
       }
+      @others = args[:others] || []
     end
     
     def document_tag
