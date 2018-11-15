@@ -124,6 +124,8 @@ module FE
           end
         end
         
+        regulation.build_xml(xml)
+        
         if others.any?
           xml.Otros do |x|
             @others.each do |o|
@@ -131,8 +133,6 @@ module FE
             end
           end
         end
-        
-        regulation.build_xml(xml)
       end
       
       builder
