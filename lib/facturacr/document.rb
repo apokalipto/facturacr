@@ -43,7 +43,7 @@ module FE
                   :payment_type, :service_type, :reference_information, 
                   :regulation, :number, :document_type, :security_code, 
                   :items, :references, :namespaces, :summary, :document_situation, 
-                  :headquarters, :terminal, :others
+                  :headquarters, :terminal, :others, :key
     
     validates :date, presence: true
     validates :number, presence: true
@@ -68,20 +68,22 @@ module FE
     end
     
     def key
-      raise "Documento inválido: #{errors.messages}" unless valid?  
-      country = "506"
-      day = "%02d" % @date.day
-      month = "%02d" % @date.month
-      year = "%02d" % (@date.year - 2000)
-      id_number = @issuer.identification_document.id_number
+      @key ||= begin
+        raise "Documento inválido: #{errors.messages}" unless valid?  
+        country = "506"
+        day = "%02d" % @date.day
+        month = "%02d" % @date.month
+        year = "%02d" % (@date.year - 2000)
+        id_number = @issuer.identification_document.id_number
 
-      type = @document_situation
-      security_code = @security_code
+        type = @document_situation
+        security_code = @security_code
 
-      result = "#{country}#{day}#{month}#{year}#{id_number}#{sequence}#{type}#{security_code}"
-      raise "The key is invalid: #{result}" unless result.length.eql?(50)
+        result = "#{country}#{day}#{month}#{year}#{id_number}#{sequence}#{type}#{security_code}"
+        raise "The key is invalid: #{result}" unless result.length.eql?(50)
       
-      result
+        result
+      end
     end
     
     def headquarters

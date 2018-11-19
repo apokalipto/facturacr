@@ -35,6 +35,7 @@ module FE
       if @document.is_a?(FE::Document)
         @document.date = DateTime.parse(@doc.css("#{root_tag} FechaEmision").text)
         @key = @doc.css("#{root_tag} Clave").text
+        @document.key = @key if @key.present?
         @document.number = @key[31..40].to_i
         @document.document_situation = @key[41]
         @document.security_code = @key[42..-1]

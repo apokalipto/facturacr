@@ -21,7 +21,13 @@ class DocumentTest < Minitest::Test
     others = [FE::Document::OtherText.new(xml_attributes: {"code"=>"my123456"}, content: "This is the custom value")]
      
     invoice = FE::Invoice.new date: Time.now, issuer: issuer, receiver: receiver, number: 1, items: items, condition: "01", summary: summary, security_code: "12345678", document_situation: "1", others: others
-    s
+
     invoice.generate
+  end
+  
+  def test_document_can_set_key_manually
+    invoice = FE::Invoice.new
+    #invoice.key = "MANUALINVALIDKEY"
+    assert_equal invoice.key, "MANUALINVALIDKEY"
   end
 end
