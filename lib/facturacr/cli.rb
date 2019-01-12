@@ -69,7 +69,11 @@ module FE
         invoke :check, [check_key], :config_file=>options[:config_file]
       else
         puts "ERROR".red
-        ap api.errors
+        request = api.errors[:request]
+        response =  request[:response]
+        ap request
+        puts "Code: #{response.code}".red
+        puts "Cause: #{response.headers[:x_error_cause]}".red
         raise "Sending Document Error" 
       end  
       puts "  (send)=> API Logout"

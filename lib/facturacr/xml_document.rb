@@ -36,13 +36,14 @@ module FE
         @document.date = DateTime.parse(@doc.css("#{root_tag} FechaEmision").text)
         @key = @doc.css("#{root_tag} Clave").text
         @document.key = @key if @key.present?
+        @document.headquarters = @key[21..23]
+        @document.terminal = @key[24..28]
         @document.number = @key[31..40].to_i
         @document.document_situation = @key[41]
         @document.security_code = @key[42..-1]
         @document.condition = @doc.css("#{root_tag} CondicionVenta").text
         @document.credit_term = @doc.css("#{root_tag} PlazoCredito").text unless @doc.css("#{root_tag} PlazoCredito").empty?
         @document.payment_type = @doc.css("#{root_tag} MedioPago").first.text
-      
         @issuer = FE::Document::Issuer.new
         @issuer.identification_document = FE::Document::IdentificationDocument.new type: @doc.css("#{root_tag} Emisor Identificacion Tipo").text, number: @doc.css("#{root_tag} Emisor Identificacion Numero").text.to_i
         @issuer.name = @doc.css("#{root_tag} Emisor Nombre").text

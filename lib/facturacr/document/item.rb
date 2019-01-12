@@ -29,6 +29,7 @@ module FE
       validates :discount_reason, presence: true, if: -> { discount.present? }
       validates :subtotal, presence: true
       validates :net_total, presence: true
+      validates :code, presence: true, length: {maximum: 20}
 
       def initialize(args = {})
         @line_number = args[:line_number]
