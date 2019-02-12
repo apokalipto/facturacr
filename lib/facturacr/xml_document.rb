@@ -33,7 +33,7 @@ module FE
       end
       
       if @document.is_a?(FE::Document)
-        date
+        
         @document.date = DateTime.parse(@doc.css("#{root_tag} FechaEmision").first&.text)
         @key = @doc.css("#{root_tag} Clave").text
         @document.key = @key if @key.present?
