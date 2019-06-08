@@ -14,8 +14,8 @@ module FE
         validates :name, presence: true, length: { maximum: 80 }
         validates :identification_document, presence: true
         validates :comercial_name, length: {maximum: 80}
-        validates :location, presence: true
-        validates :email, presence: true, format: {with: /\s*\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*\s*/}
+        validates :location, presence: true 
+        validates :email, presence: true, format: {with: /\s*\w+([-+.']\ws+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*\s*/}
         
         def initialize(args={})
           @name = args[:name]

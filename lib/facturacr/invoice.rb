@@ -3,6 +3,7 @@ require 'facturacr/document'
 module FE
  
   class Invoice < Document
+    validates :receiver, presence: true, if: -> { FE.configuration.version_43? }
     
     def initialize(args={})
       @date = args[:date]

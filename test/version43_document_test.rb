@@ -1,9 +1,9 @@
 require_relative 'test_helper'
 
-class DocumentTest < Minitest::Test
+class Version43DocumentTest < Minitest::Test
   def setup
     FE.configure do |config|
-      config.version = "4.2"
+      config.version = "4.3"
     end
   end
   
@@ -27,7 +27,7 @@ class DocumentTest < Minitest::Test
      
     invoice = FE::Invoice.new date: Time.now, issuer: issuer, receiver: receiver, number: 1, items: items, condition: "01", summary: summary, security_code: "12345678", document_situation: "1", others: others
 
-    xml = invoice.generate
+    invoice.generate
   end
   
   def test_ticket_xml_validation

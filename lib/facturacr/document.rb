@@ -38,18 +38,23 @@ module FE
       "2" => "Contingencia",
       "3" => "Sin Internet"
     }.freeze
+    
+    ECONOMIC_ACTIVITIES = {
+      "01"=>"Actividad 1"
+    }.freeze
   
     attr_accessor :serial, :date, :issuer, :receiver, :condition, :credit_term, 
                   :payment_type, :service_type, :reference_information, 
                   :regulation, :number, :document_type, :security_code, 
                   :items, :references, :namespaces, :summary, :document_situation, 
-                  :headquarters, :terminal, :others, :key
+                  :headquarters, :terminal, :others, :key, :economic_activity
     
+    validates :economic_activity, presence: true, inclusion: ECONOMIC_ACTIVITIES.keys, if: ->{ FE.configuration.version_43? }
     validates :date, presence: true
     validates :number, presence: true
     validates :issuer, presence: true
     validates :condition, presence: true, inclusion: CONDITIONS.keys
-    validates :credit_term, presence: true, if: ->{condition.eql?("02")}
+    validates :credit_term, presence: true, if: ->{ condition.eql?("02") }
     validates :payment_type, presence: true, inclusion: PAYMENT_TYPES.keys
     validates :document_type, presence: true, inclusion: DOCUMENT_TYPES.keys
     validates :document_situation, presence: true, inclusion: DOCUMENT_SITUATION.keys
@@ -104,6 +109,7 @@ module FE
       builder  = Nokogiri::XML::Builder.new(encoding: 'UTF-8')
       
       builder.send(document_tag, @namespaces) do |xml|
+        xml.CodigoActividad 
         xml.Clave key
         xml.NumeroConsecutivo sequence
         xml.FechaEmision @date.xmlschema

@@ -13,6 +13,7 @@ module FE
     attr_accessor :environment
     attr_accessor :file_path
     attr_accessor :mode
+    attr_accessor :version
     
     
     def initialize
@@ -45,6 +46,14 @@ module FE
     
     def file?
       @mode.to_sym.eql?(:file)
+    end
+    
+    def version_42?
+      version.eql?('4.2')
+    end
+    
+    def version_43?
+      version.eql?('4.3')
     end
     
   end
