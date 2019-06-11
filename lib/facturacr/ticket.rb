@@ -1,10 +1,21 @@
-require 'facturacr/document'
+  require 'facturacr/document'
 
 module FE
- 
+
   class Ticket < Document
-    
+    NAMESPACES ={
+      "4.2" => {
+      "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
+      "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
+      "xmlns"=>"https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/tiqueteElectronico"
+      },
+      "4.3" => {
+        "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
+        "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
+        "xmlns"=>"https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/tiqueteElectronico"#,
+      }}
     def initialize(args={})
+      @economic_activity = args[:economic_activity]
       @date = args[:date]
       @issuer = args[:issuer]
       @receiver = args[:receiver]
@@ -15,20 +26,17 @@ module FE
       @document_type = "04"
       @credit_term = args[:credit_term]
       @summary = args[:summary]
+      @other_charges = args[:other_charges]
       @regulation = args[:regulation] ||= FE::Document::Regulation.new
       @security_code = args[:security_code]
       @document_situation = args[:document_situation]
-      @namespaces = {
-        "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance", 
-        "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
-        "xmlns"=>"https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/tiqueteElectronico"
-      }
+      @namespaces = NAMESPACES[FE.configuration.version] || NAMESPACES["4.2"]
       @others = args[:others] || []
     end
-    
+
     def document_tag
       "TiqueteElectronico"
     end
-    
-  end 
+
+  end
 end

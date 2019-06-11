@@ -1,11 +1,23 @@
 require 'facturacr/document'
 
 module FE
- 
+
   class Invoice < Document
+    NAMESPACES ={
+      "4.2" => {
+      "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
+      "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
+      "xmlns"=>"https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/facturaElectronica"#,
+      },
+      "4.3" => {
+        "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
+        "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
+        "xmlns"=>"https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/facturaElectronica"#,
+      }}
     validates :receiver, presence: true, if: -> { FE.configuration.version_43? }
-    
+
     def initialize(args={})
+      @economic_activity = args[:economic_activity]
       @date = args[:date]
       @issuer = args[:issuer]
       @receiver = args[:receiver]
@@ -19,18 +31,14 @@ module FE
       @regulation = args[:regulation] ||= FE::Document::Regulation.new
       @security_code = args[:security_code]
       @document_situation = args[:document_situation]
-      @namespaces = {
-        "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance", 
-        "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
-        "xmlns"=>"https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/facturaElectronica"#,
-        #"xsi:schemaLocation"=>"https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/facturaElectronica https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/facturaElectronica.xsd"
-      }
+      @other_charges = args[:other_charges]
+      @namespaces = NAMESPACES[FE.configuration.version] || NAMESPACES["4.2"]
       @others = args[:others] || []
     end
-    
+
     def document_tag
       "FacturaElectronica"
     end
-    
-  end 
+
+  end
 end

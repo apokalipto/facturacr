@@ -1,16 +1,19 @@
 require 'active_model'
 
-module FE  
+module FE
   class Document
     include ActiveModel::Validations
-    
+
     CONDITIONS = {
-      "01"=>"Contado", 
-      "02"=>"Crédito", 
-      "03"=>"Consignación", 
-      "04"=>"Apartado", 
-      "05"=>"Arrendamiento con Opción de Compra", 
+      "01"=>"Contado",
+      "02"=>"Crédito",
+      "03"=>"Consignación",
+      "04"=>"Apartado",
+      "05"=>"Arrendamiento con Opción de Compra",
       "06"=>"Arrendamiento en Función Financiera",
+      "07"=>"Cobro a favor de un tercero",
+      "08"=>"Servicios prestados al Estado a crédito ",
+      "09"=>"Pago del servicios prestado al Estado ",
       "99"=>"Otros"
     }.freeze
     PAYMENT_TYPES = {
@@ -30,25 +33,30 @@ module FE
       "06"=> "Contrato",
       "07"=> "Procedimiento",
       "08"=> "Comprobante Emitido en Contingencia",
+      "09"=> "Devolución mercadería",
+      "10"=> "Sustituye factura rechazada por el Ministerio de Hacienda",
+      "11"=> "Sustituye factura rechazada por el Receptor del comprobante",
+      "12"=> "Sustituye Factura de exportación",
+      "13"=> "Facturación mes vencido",
       "99"=> "Otros"
-      
+
     }.freeze
     DOCUMENT_SITUATION = {
       "1" => "Normal",
       "2" => "Contingencia",
       "3" => "Sin Internet"
     }.freeze
-    
+
     ECONOMIC_ACTIVITIES = {
       "01"=>"Actividad 1"
     }.freeze
-  
-    attr_accessor :serial, :date, :issuer, :receiver, :condition, :credit_term, 
-                  :payment_type, :service_type, :reference_information, 
-                  :regulation, :number, :document_type, :security_code, 
-                  :items, :references, :namespaces, :summary, :document_situation, 
-                  :headquarters, :terminal, :others, :key, :economic_activity
-    
+
+    attr_accessor :serial, :date, :issuer, :receiver, :condition, :credit_term,
+                  :payment_type, :service_type, :reference_information,
+                  :regulation, :number, :document_type, :security_code,
+                  :items, :references, :namespaces, :summary, :document_situation,
+                  :headquarters, :terminal, :others, :key, :economic_activity, :other_charges, :document
+
     validates :economic_activity, presence: true, inclusion: ECONOMIC_ACTIVITIES.keys, if: ->{ FE.configuration.version_43? }
     validates :date, presence: true
     validates :number, presence: true
@@ -59,22 +67,22 @@ module FE
     validates :document_type, presence: true, inclusion: DOCUMENT_TYPES.keys
     validates :document_situation, presence: true, inclusion: DOCUMENT_SITUATION.keys
     validates :summary, presence: true
-    validates :regulation, presence: true
+    validates :regulation, presence: true, if: ->{ FE.configuration.version_42? }
     validates :security_code, presence: true, length: {is: 8}
     validates :references, presence: true, if: -> {document_type.eql?("02") || document_type.eql?("03")}
-    
-    
+
+
     def initialize
       raise "Subclasses must implement this method"
     end
-    
+
     def document_name
       raise "Subclasses must implement this method"
     end
-    
+
     def key
       @key ||= begin
-        raise "Documento inválido: #{errors.messages}" unless valid?  
+        raise "Documento inválido: #{errors.messages}" unless valid?
         country = "506"
         day = "%02d" % @date.day
         month = "%02d" % @date.month
@@ -86,30 +94,30 @@ module FE
 
         result = "#{country}#{day}#{month}#{year}#{id_number}#{sequence}#{type}#{security_code}"
         raise "The key is invalid: #{result}" unless result.length.eql?(50)
-      
+
         result
       end
     end
-    
+
     def headquarters
       @headquarters ||= "001"
     end
-  
+
     def terminal
       @terminal ||= "00001"
-    end 
-    
+    end
+
     def sequence
       cons = ("%010d" % @number)
       "#{headquarters}#{terminal}#{@document_type}#{cons}"
     end
-  
+
     def build_xml
       raise "Documento inválido: #{errors.messages}" unless valid?
       builder  = Nokogiri::XML::Builder.new(encoding: 'UTF-8')
-      
+
       builder.send(document_tag, @namespaces) do |xml|
-        xml.CodigoActividad 
+        xml.CodigoActividad @economic_activity if FE.configuration.version_43?
         xml.Clave key
         xml.NumeroConsecutivo sequence
         xml.FechaEmision @date.xmlschema
@@ -118,22 +126,26 @@ module FE
         xml.CondicionVenta @condition
         xml.PlazoCredito @credit_term if @credit_term.present? && @condition.eql?("02")
         xml.MedioPago @payment_type
+
         xml.DetalleServicio do |x|
           @items.each do |item|
             item.build_xml(x)
           end
         end
-        
+
+
+        other_charges.build_xml(xml) if FE.configuration.version_43? # see this
+
         summary.build_xml(xml)
-        
+
         if references.present?
           references.each do |r|
             r.build_xml(xml)
           end
         end
-        
-        regulation.build_xml(xml)
-        
+
+        regulation.build_xml(xml)  if FE.configuration.version_42? # see this
+
         if others.any?
           xml.Otros do |x|
             @others.each do |o|
@@ -142,14 +154,14 @@ module FE
           end
         end
       end
-      
+
       builder
     end
-    
+
     def generate
       build_xml.to_xml(:save_with => Nokogiri::XML::Node::SaveOptions::AS_XML)
     end
-    
+
     def api_payload
       payload = {}
       payload[:clave] = key
@@ -164,13 +176,13 @@ module FE
           numeroIdentificacion: @receiver.identification_document.id_number
         }
       end
-      
+
       payload
     end
-    
+
   end
-  
-  
+
+
 end
 
 require 'facturacr/document/code'
@@ -189,3 +201,4 @@ require 'facturacr/document/summary'
 require 'facturacr/document/tax'
 require 'facturacr/document/other_text'
 require 'facturacr/document/other_content'
+require 'facturacr/document/other_charges'

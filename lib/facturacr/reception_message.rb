@@ -3,26 +3,50 @@ require 'active_model'
 module FE
   class ReceptionMessage
     include ActiveModel::Validations
-    
+
     MESSAGE_TYPES = {
       "1" => "Aceptado",
       "2" => "Aceptacion Parcial",
       "3" => "Rechazado"
     }.freeze
-    
-    attr_accessor :key, :date, :issuer_id_number, :receiver_id_number, :message, :details, :tax, :total, :number, :receiver_id_type, :security_code, :document_situation, :issuer_id_type
-    
+
+    TAX_CONDITION={
+      "01" => "Genera crédito IVA",
+      "02" => "Genera Crédito parcial del IVA",
+      "03" => "Bienes de Capital",
+      "04" => "Gasto corriente",
+      "05" => "Proporcionalidad"
+    }.freeze
+
+    NAMESPACES = {
+      "4.2" => {
+        "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
+        "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
+        "xmlns"=>"https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/mensajeReceptor"
+      },
+      "4.3" => {
+        "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
+        "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
+        "xmlns"=>"https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/mensajeReceptor"
+      }
+    }
+
+    attr_accessor :key, :date, :issuer_id_number, :receiver_id_number, :message, :details, :economic_activity,
+    :tax_condition,:tax_to_credit, :spending_to_apply,:tax, :total, :number, :receiver_id_type, :security_code,
+    :document_situation, :issuer_id_type
+
     validates :date, presence: true
     validates :issuer_id_number, presence: true, length: {is: 12}
     validates :receiver_id_number, presence: true, length: {is: 12}
     validates :message, presence: true, inclusion: MESSAGE_TYPES.keys
+    validates :tax_condition, inclusion: TAX_CONDITION.keys
     validates :tax, numericality: true, if: -> { tax.present? }
     validates :total, presence: true, numericality: true
     validates :number, presence: true
     validates :security_code, presence: true, length: {is: 8}
     validates :issuer_id_type, presence: true
     validates :receiver_id_type, presence: true
-    
+
     def initialize(args = {})
       @key = args[:key]
       @date = args[:date]
@@ -37,22 +61,18 @@ module FE
       @number = args[:number].to_i
       @security_code = args[:security_code]
       @document_situation = args[:document_situation]
-      @namespaces = {
-        "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance", 
-        "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
-        "xmlns"=>"https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/mensajeReceptor"
-      }
+      @namespaces = NAMESPACES[FE.configuration.version] || NAMESPACES["4.2"]
     end
-    
-    
+
+
     def headquarters
       @headquarters ||= "001"
     end
-  
+
     def terminal
       @terminal ||= "00001"
-    end 
-    
+    end
+
     def sequence
       if @message.eql?("1")
         @document_type = "05"
@@ -64,13 +84,13 @@ module FE
       cons = ("%010d" % @number)
       "#{headquarters}#{terminal}#{@document_type}#{cons}"
     end
-    
-    
-    
+
+
+
     def build_xml
       raise "Documento inválido: #{errors.messages}" unless valid?
       builder  = Nokogiri::XML::Builder.new
-      
+
       builder.MensajeReceptor(@namespaces) do |xml|
         xml.Clave @key
         xml.NumeroCedulaEmisor @issuer_id_number
@@ -82,16 +102,16 @@ module FE
         xml.NumeroCedulaReceptor @receiver_id_number
         xml.NumeroConsecutivoReceptor sequence
       end
-      
+
       builder
     end
-    
+
     def generate
       build_xml.to_xml(:save_with => Nokogiri::XML::Node::SaveOptions::AS_XML)
     end
-    
+
     def api_payload
-      
+
       payload = {}
       payload[:clave] = @key
       payload[:fecha] = @date.xmlschema
@@ -106,7 +126,7 @@ module FE
       payload[:consecutivoReceptor] = sequence
       payload
     end
-    
+
     def infer_id_type(id_number)
       if id_number.to_i.to_s.size == 9
         "01"
@@ -116,7 +136,7 @@ module FE
         "03"
       end
     end
-    
+
   end
-  
+
 end

@@ -2,7 +2,7 @@ require 'yaml'
 require 'erb'
 module FE
   class Configuration
-    
+
     attr_accessor :api_username
     attr_accessor :api_password
     attr_accessor :key_path
@@ -14,8 +14,8 @@ module FE
     attr_accessor :file_path
     attr_accessor :mode
     attr_accessor :version
-    
-    
+
+
     def initialize
       @environment = "development"
       @mode = :manual
@@ -27,7 +27,7 @@ module FE
       @documents_endpoint = "https://api.comprobanteselectronicos.go.cr/recepcion-sandbox/v1"
       @authentication_endpoint = "https://idp.comprobanteselectronicos.go.cr/auth/realms/rut-stag/protocol/openid-connect"
     end
-    
+
     def read_config_file
       if file? && @file_path && File.exists?(@file_path)
         template = ERB.new(File.read(@file_path))
@@ -39,22 +39,22 @@ module FE
         end
       end
     end
-    
+
     def manual?
       @mode.to_sym.eql?(:manual)
     end
-    
+
     def file?
       @mode.to_sym.eql?(:file)
     end
-    
+
     def version_42?
       version.eql?('4.2')
     end
-    
+
     def version_43?
       version.eql?('4.3')
     end
-    
+
   end
 end
