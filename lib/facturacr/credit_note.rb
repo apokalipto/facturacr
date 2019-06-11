@@ -21,7 +21,7 @@ module FE
       @items = args[:items]
       @number = args[:number]
       @condition = args[:condition]
-      @payment_type = args[:payment_type] || "01"
+      @payment_type = args[:payment_type] || ["01"]
       @document_type = "03"
       @credit_term = args[:credit_term]
       @summary = args[:summary]

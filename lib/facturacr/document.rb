@@ -63,14 +63,13 @@ module FE
     validates :issuer, presence: true
     validates :condition, presence: true, inclusion: CONDITIONS.keys
     validates :credit_term, presence: true, if: ->{ condition.eql?("02") }
-    validates :payment_type, presence: true, inclusion: PAYMENT_TYPES.keys
     validates :document_type, presence: true, inclusion: DOCUMENT_TYPES.keys
     validates :document_situation, presence: true, inclusion: DOCUMENT_SITUATION.keys
     validates :summary, presence: true
     validates :regulation, presence: true, if: ->{ FE.configuration.version_42? }
     validates :security_code, presence: true, length: {is: 8}
     validates :references, presence: true, if: -> {document_type.eql?("02") || document_type.eql?("03")}
-
+    validate :payment_types_ok?
 
     def initialize
       raise "Subclasses must implement this method"
@@ -125,7 +124,10 @@ module FE
         receiver.build_xml(xml) if receiver.present?
         xml.CondicionVenta @condition
         xml.PlazoCredito @credit_term if @credit_term.present? && @condition.eql?("02")
-        xml.MedioPago @payment_type
+        @payment_type.each do |pt|
+          @summary.with_credit_card = true if pt.eql?("02")
+          xml.MedioPago pt
+        end
 
         xml.DetalleServicio do |x|
           @items.each do |item|
@@ -180,6 +182,18 @@ module FE
       payload
     end
 
+  end
+  
+  private
+  
+  def payment_types_ok?
+    errors.add :payment_type, "missing payment type" if @payment_type.nil?
+    if @payment_type.is_a?(Array)
+      #errors.add :payment_type, "invalid payment types: not included" unless PAYMENT_TYPE.keys.include?
+      #TODO ver si incluye alguno de los valores de la lista
+    else
+      errors.add :payment_type, "invalid payment type: not array"
+    end
   end
 
 
