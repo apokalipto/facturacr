@@ -108,10 +108,7 @@ module FE
 
       end
 
-      def totals_ok?
-
-        errors.add :subtotal, :invalid_amount, message: 'invalid amount' if (@total - @discount).round(5).abs > 0.0005
-      end
+      
     end
   end
 end

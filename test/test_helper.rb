@@ -14,6 +14,7 @@ require 'facturacr/document/tax'
 require 'facturacr/document/summary'
 require 'facturacr/document/regulation'
 require 'facturacr/document/reference'
+require 'facturacr/document/other_charges'
 
 require 'facturacr/invoice'
 require 'facturacr/credit_note'

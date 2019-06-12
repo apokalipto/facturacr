@@ -47,9 +47,6 @@ module FE
         end
       end
 
-      def totals_ok?
-        errors.add :total_tax, :invalid_amount, message: 'invalid amount' if (@percentage * @total).round(5).abs > 0.0005
-      end
 
     end
   end

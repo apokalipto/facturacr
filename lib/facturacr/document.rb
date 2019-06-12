@@ -124,10 +124,12 @@ module FE
         receiver.build_xml(xml) if receiver.present?
         xml.CondicionVenta @condition
         xml.PlazoCredito @credit_term if @credit_term.present? && @condition.eql?("02")
+
         @payment_type.each do |pt|
           @summary.with_credit_card = true if pt.eql?("02")
           xml.MedioPago pt
         end
+
 
         xml.DetalleServicio do |x|
           @items.each do |item|
@@ -182,19 +184,19 @@ module FE
       payload
     end
 
-  end
-  
-  private
-  
-  def payment_types_ok?
-    errors.add :payment_type, "missing payment type" if @payment_type.nil?
-    if @payment_type.is_a?(Array)
-      #errors.add :payment_type, "invalid payment types: not included" unless PAYMENT_TYPE.keys.include?
-      #TODO ver si incluye alguno de los valores de la lista
-    else
-      errors.add :payment_type, "invalid payment type: not array"
+    private
+
+    def payment_types_ok?
+      errors.add :payment_type, "missing payment type" if @payment_type.nil?
+      if @payment_type.is_a?(Array)
+        errors.add :payment_type, "invalid payment types: not included" unless @payment_type.all? {|i| PAYMENT_TYPES.include?(i)}
+      else
+        errors.add :payment_type, "invalid payment type: not array"
+      end
     end
+
   end
+
 
 
 end

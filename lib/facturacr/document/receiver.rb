@@ -16,7 +16,7 @@ module FE
         validates :comercial_name, length: { maximum: 80 }
         validates :foreign_id_number, length: { maximum: 20 }
         validates :other_foreign_signs,length: { maximum: 300 }
-        validates :email, length: {maximum: 160} #, format:{with: /\s*\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*\s*/}
+        validates :email, length: {maximum: 160}, format:{with: /\s*\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*\s*/}, if: ->{email.present?}
 
 
 
@@ -31,7 +31,7 @@ module FE
           @email = args[:email]
           @foreign_id_number = args[:foreign_id_number]
           @other_foreign_signs= args[:other_foreign_signs]
-          @document="receive"
+
         end
 
         def build_xml(node)
