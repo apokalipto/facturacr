@@ -39,7 +39,7 @@ module FE
     validates :issuer_id_number, presence: true, length: {is: 12}
     validates :receiver_id_number, presence: true, length: {is: 12}
     validates :message, presence: true, inclusion: MESSAGE_TYPES.keys
-    validates :tax_condition, inclusion: TAX_CONDITION.keys
+    validates :tax_condition, inclusion: TAX_CONDITION.keys, presence:true, if: ->{FE.configuration.version_43?}
     validates :tax, numericality: true, if: -> { tax.present? }
     validates :total, presence: true, numericality: true
     validates :number, presence: true
@@ -97,6 +97,10 @@ module FE
         xml.FechaEmisionDoc @date.xmlschema
         xml.Mensaje @message
         xml.DetalleMensaje @details if @details
+        xml.CodigoActividad @economic_activity if FE.configuration.version_43?
+        xml.CondicionImpuesto @tax_condition if FE.configuration.version_43?
+        xml.MontoImpuestoAcreditar @tax_to_credit if FE.configuration.version_43?
+        xml.MontoTotalDeGastoAplicable @spending_to_apply if FE.configuration.version_43?
         xml.MontoTotalImpuesto @tax.to_f if @tax
         xml.TotalFactura @total
         xml.NumeroCedulaReceptor @receiver_id_number

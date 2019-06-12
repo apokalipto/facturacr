@@ -61,6 +61,7 @@ module FE
     validates :date, presence: true
     validates :number, presence: true
     validates :issuer, presence: true
+    validates :receiver, presence: true, if: -> {document_type.eql?("01") || document_type.eql?("08")}
     validates :condition, presence: true, inclusion: CONDITIONS.keys
     validates :credit_term, presence: true, if: ->{ condition.eql?("02") }
     validates :document_type, presence: true, inclusion: DOCUMENT_TYPES.keys
@@ -69,7 +70,10 @@ module FE
     validates :regulation, presence: true, if: ->{ FE.configuration.version_42? }
     validates :security_code, presence: true, length: {is: 8}
     validates :references, presence: true, if: -> {document_type.eql?("02") || document_type.eql?("03")}
+    validates :items, presence:true, if: -> {document_type.eql?("08") || document_type.eql?("09")}
     validate :payment_types_ok?
+    validates :other_charges, presence:true, if: ->{FE.configuration.version_43?}
+    validates :other_charges, presence:false, if: ->{FE.configuration.version_42?}
 
     def initialize
       raise "Subclasses must implement this method"
@@ -193,6 +197,7 @@ module FE
       else
         errors.add :payment_type, "invalid payment type: not array"
       end
+
     end
 
   end

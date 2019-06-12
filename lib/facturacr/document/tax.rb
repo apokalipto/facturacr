@@ -25,15 +25,17 @@ module FE
         "07"=>"Transitorio 8% ",
         "08"=>"Tarifa general 13%"
       }.freeze
-      attr_accessor :code, :rate_code ,:rate, :iva_factor, :total, :exoneration
+      attr_accessor :code, :rate_code ,:rate, :iva_factor, :total, :exoneration, :total_exportation
 
-      validates :rate_code, inclusion: RATE_CODES.keys
+      validates :rate_code, inclusion: RATE_CODES.keys, presence: true, if:->{ FE.configuration.version_43?}
       validates :code, presence: true, inclusion: TAX_CODES.keys
+    #  validates :total_exportation, presence: false, if:->{:document_type.eql?("01") || :document_type.eql?("08") || :document_type.eql?("04")}
       # It is a mandatory field when a tax is added. And it is a decimal number that can be composed of 4 integers and 2 decimals
       validates :rate, presence: true, format: { with: /\A\d{1,4}(\.\d{0,2})?\z/ }
       # It is a mandatory field when a tax is added, it is obtained from the multiplication of the "subtotal" field by "tax rate"
       # And is a decimal number that can be composed of 13 integers and 5 decimals
       validates :total, presence: true, format: { with: /\A\d{1,13}(\.\d{0,5})?\z/ }
+      validates :exoneration, presence:false, if: ->{:document_type.eql?("09")}
     #  validates :iva_factor, presence: true, if: ->{  }
 
       def initialize(args={})
@@ -43,6 +45,7 @@ module FE
         @iva_factor = args[:iva_factor]
         @total = args[:total]
         @exoneration = args[:exoneration]
+        @total_exportation = args[:total_exportation]
 
       end
 
@@ -58,6 +61,7 @@ module FE
           xml.Tarifa @rate
           xml.FactorIva @iva_factor if @iva_factor.present? && FE.configuration.version_43?
           xml.Monto @total
+          xml.MontoExportacion @total_exportation if @total_exportation.present? && FE.configuration.version_43?
 
          if exoneration.present?
          exoneration.build_xml(xml)
@@ -66,7 +70,7 @@ module FE
         end
       end
 
-      
+
     end
   end
 end

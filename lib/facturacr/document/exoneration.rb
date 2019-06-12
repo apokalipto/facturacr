@@ -21,7 +21,7 @@ module FE
       validates :institution, presence: true, length: { maximum: 160 }
       validates :date, presence: true
       validates :total_tax,presence: true
-      validate :totals_ok?
+      
 
       def initialize(args={})
         @document_type = args[:document_type]

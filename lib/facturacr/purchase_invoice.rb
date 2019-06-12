@@ -2,7 +2,7 @@ require 'facturacr/document'
 
 module FE
 
-  class Purchase_Invoice < Document
+  class PurchaseInvoice < Document
 
     validates :receiver, presence: true, if: -> { FE.configuration.version_43? }
 

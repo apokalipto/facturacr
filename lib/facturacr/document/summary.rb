@@ -5,11 +5,14 @@ module FE
 
       attr_accessor :currency, :exchange_rate, :services_taxable_total, :services_exent_total, :services_exonerate_total,
                     :goods_taxable_total,:goods_exent_total,:goods_exonerate_total, :taxable_total, :exent_total,:exonerate_total,
-                    :subtotal, :discount_total, :gross_total, :tax_total,:total_iva_returned,:total_others_charges, :net_total, :exoneration, :with_credit_card
+                    :subtotal, :discount_total, :gross_total, :tax_total,:total_iva_returned,:total_others_charges, :net_total,  :with_credit_card
 
       validates :exchange_rate, presence: true, if: -> { currency.present? }
       validates :currency, presence: true
-      validates :total_iva_returned, presence: true, if: -> { FE.configuration.version_43? && with_credit_card }
+      validates :services_exonerate_total, presence:false, if: -> {:document_type.eql?("09")}
+      validates :goods_exonerate_total, presence:false, if: -> {:document_type.eql?("09")}
+      validates :exonerate_total, presence:false, if: -> {:document_type.eql?("09")}
+      #validates :total_iva_returned, presence: true, if: -> { FE.configuration.version_43? ) }
       validate :totals_ok?
 
       def initialize(args={})
@@ -31,7 +34,7 @@ module FE
         @total_iva_returned = args[:total_iva_returned].to_f
         @total_others_charges =args[:total_others_charges].to_f
         @net_total = args[:net_total].to_f
-        @exoneration= args[:exoneration]
+
       end
 
       def build_xml(node)
@@ -57,7 +60,7 @@ module FE
           xml.TotalVentaNeta @gross_total
           xml.TotalImpuesto @tax_total
           if FE.configuration.version_43?
-            #xml.TotalIVADevuelto @total_iva_returned 
+            #xml.TotalIVADevuelto @total_iva_returned
             xml.TotalOtrosCargos @total_others_charges
           end
           xml.TotalComprobante @net_total

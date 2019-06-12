@@ -19,21 +19,22 @@ module FE
                     :discount, :discount_reason, :subtotal,:taxable_base ,:taxes,:net_tax ,:net_total, :exoneration
 
       validates :line_number, presence: true
-      validates :tariff_item, presence: true, if:->{:document_type.eql?("01") }
+      validates :tariff_item, presence: false, if:->{(:document_type.eql?("01") || :document_type.eql?("08") || :document_type.eql?("04")) && (FE.configuration.version_43?)}
       validates :comercial_code_type, inclusion: CODE_TYPES.keys, if: -> { comercial_code.present? }
       validates :quantity, presence: true, numericality: { greater_than: 0 }
       validates :unit, presence: true, inclusion: UNITS
-      validates :description, presence: true, length: { maximum: 200 }
+      validates :description, presence: true, length: { maximum: 200 }, if:->{:document_type.eql?("09") || :document_type.eql?("08") }
       validates :unit_price, presence: true
       validates :total, presence: true
       validates :discount, numericality: { grater_than: 0 }, if: -> { discount.present? }
       validates :discount_reason, presence: true, if: -> { discount.present? }
       validates :subtotal, presence: true
-      validates :taxable_base, presence: true, if: ->{ taxes.map { |t| t.code.eql?("07")  }.include?(true) }
+      #validates :taxable_base, presence: true, if: ->{ (taxes.map{ |t| t.code.eql?("07")}.include?(true)) && FE.configuration.version_43? }
+      validates :taxable_base, presence: false, if: ->{(:document_type.eql?("09")) && FE.configuration.version_43?}
       validates :net_tax,presence:true, if: ->{exoneration.present?}
       validates :net_total, presence: true
       validates :comercial_code, presence: true, length: {maximum: 20}
-      validates :code, length: {maximum: 13}
+      validates :code, length: {maximum: 13}, if: ->{FE.configuration.version_43?}
 
 
       def initialize(args = {})
@@ -54,6 +55,8 @@ module FE
         @exoneration = args[:exoneration]
         @net_tax = args[:net_tax]
         @tariff_item = args[:tariff_item]
+
+
       end
 
       def build_xml(node)
@@ -98,7 +101,6 @@ module FE
 
           x.BaseImponible @taxable_base if @taxable_base.present? && FE.configuration.version_43?
           @taxes.each do |tax|
-
             tax.build_xml(x)
           end
 
@@ -108,7 +110,7 @@ module FE
 
       end
 
-      
+
     end
   end
 end

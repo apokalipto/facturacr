@@ -2,7 +2,7 @@ require 'facturacr/document'
 
 module FE
 
-  class Export_Invoice < Document
+  class ExportInvoice < Document
     validates :receiver, presence: true, if: -> { FE.configuration.version_43? }
 
     def initialize(args={})

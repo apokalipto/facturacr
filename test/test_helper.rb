@@ -17,6 +17,8 @@ require 'facturacr/document/reference'
 require 'facturacr/document/other_charges'
 
 require 'facturacr/invoice'
+require 'facturacr/export_invoice'
+require 'facturacr/purchase_invoice'
 require 'facturacr/credit_note'
 require 'facturacr/data_provider'
 require 'facturacr/signer/signer'

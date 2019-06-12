@@ -4,6 +4,8 @@ require 'facturacr/configuration'
 require 'facturacr/document'
 require 'facturacr/invoice'
 require 'facturacr/credit_note'
+require 'facturacr/export_invoice'
+require 'facturacr/purchase_invoice'
 require 'facturacr/debit_note'
 require 'facturacr/ticket'
 require 'facturacr/signed_document'
@@ -19,7 +21,7 @@ module FE
   class << self
     attr_accessor :configuration
   end
-  
+
   def self.configure
     if self.configuration.nil?
       self.configuration ||= Configuration.new
@@ -27,13 +29,13 @@ module FE
     yield(configuration)
     configuration.read_config_file if configuration.file?
   end
-  
+
   def self.root
     File.dirname __dir__
   end
-  
+
   def self.bin
     File.join root, 'bin'
   end
-  
+
 end
