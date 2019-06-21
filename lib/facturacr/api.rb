@@ -32,7 +32,7 @@ module FE
       @token
     rescue => e
       puts "AUTH ERROR: #{e.message}".red
-      raise e
+      raise FE::Error("authentication error: #{e.message}",class: self.class)
     end
     
     def logout

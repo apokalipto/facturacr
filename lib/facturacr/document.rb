@@ -76,11 +76,11 @@ module FE
     validates :other_charges, presence:false, if: ->{FE.configuration.version_42?}
 
     def initialize
-      raise "Subclasses must implement this method"
+      raise FE::Error "Subclasses must implement this method"
     end
 
     def document_name
-      raise "Subclasses must implement this method"
+      raise FE::Error "Subclasses must implement this method"
     end
 
     def key
@@ -116,7 +116,7 @@ module FE
     end
 
     def build_xml
-      raise "Documento inválido: #{errors.messages}" unless valid?
+      raise Fe::Error.new "Documento inválido", class: self.class, messages: errors.messages unless valid?
       builder  = Nokogiri::XML::Builder.new(encoding: 'UTF-8')
 
       builder.send(document_tag, @namespaces) do |xml|

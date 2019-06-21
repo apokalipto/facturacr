@@ -29,12 +29,11 @@ module FE
         end
 
         def build_xml(node)
-          raise "IdentificationDocument is invalid" if @identification_document.nil? || !@identification_document.is_a?(IdentificationDocument)
-          raise "Location is invalid" if @location.nil? || !@location.is_a?(Location)
-          raise "Phone is invalid" if !@phone.nil? && !@phone.is_a?(Phone)
-          raise "Fax is invalid" if !@fax.nil? && !@fax.is_a?(Fax)
-
-          raise "Issuer is invalid: #{errors.messages}" unless valid?
+          raise FE::Error("identification document not present or invalid",class: self.class, messages: {identification_document: ["blank"]}) if @identification_document.nil? || !@identification_document.is_a?(IdentificationDocument)
+          raise FE::Error("location not present or invalid",class: self.class, messages: {location: ["blank"]}) if @location.nil? || !@location.is_a?(Location)
+          raise FE::Error("phone not present or invalid",class: self.class, messages: {phone: ["blank"]}) if !@phone.nil? && !@phone.is_a?(Phone)
+          raise FE::Error("fax not present or invalid",class: self.class, messages: {fax: ["blank"]}) if !@fax.nil? && !@fax.is_a?(Fax)
+          raise FE::Error("issuer invalid",class: self.class, messages: errors.messages) unless valid?
 
           node = Nokogiri::XML::Builder.new if node.nil?
           node.Emisor do |xml|

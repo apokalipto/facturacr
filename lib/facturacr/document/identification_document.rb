@@ -20,12 +20,13 @@ module FE
           
           @document_type = args[:type]
           @raw_id_number = args[:number]
-          @id_number = "%012d" % args[:number]
-          
+          if @raw_id_number
+            @id_number = "%012d" % args[:number]
+          end
         end
         
         def build_xml(node)
-          raise "Invalid Record: #{errors.messages}" unless valid?
+          raise FE::Error.new("invalid identification document", self.class, errors.messages) unless valid?
           node = Nokogiri::XML::Builder.new if node.nil?         
           node.Identificacion do |x|
             x.Tipo document_type

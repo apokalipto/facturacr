@@ -52,7 +52,7 @@ module FE
 
       def build_xml(node)
 
-        raise "Invalida Record: #{errors.messages}" unless valid?
+        raise FE::Error("tax invalid",class: self.class, messages: errors.messages) unless valid?
         node = Nokogiri::XML::Builder.new if node.nil?
 
         node.Impuesto do |xml|

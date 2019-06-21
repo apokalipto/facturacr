@@ -16,6 +16,7 @@ require 'facturacr/version'
 require 'facturacr/data_provider'
 require 'facturacr/signer/signer'
 require 'facturacr/reception_message'
+require 'facturacr/error'
 
 module FE
   class << self

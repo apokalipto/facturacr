@@ -21,7 +21,8 @@ module FE
       end
       
       def build_xml(node)
-        raise "Invalid Record: #{errors.messages}" unless valid?
+        raise FE::Error("phone type invalid",class: self.class, messages: errors.messages) unless valid?
+        
         node = Nokogiri::XML::Builder.new if node.nil?         
         node.send(tag_name) do |xml|
           xml.CodigoPais country_code
