@@ -38,7 +38,7 @@ module FE
     def logout
       url = @authentication_endpoint
       if @authentication_endpoint.end_with?('token')
-        url.gsub!("token","logout")
+        url = url.gsub("token","logout")
       else
         url += "/logout"
       end
