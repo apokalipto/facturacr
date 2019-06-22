@@ -17,7 +17,6 @@ module FE
         validates :foreign_id_number, length: { maximum: 20 }, if: -> {:document_type.eql?("01") || :document_type.eql?("08")}
         validates :other_foreign_signs,length: { maximum: 300 }
         validates :email, length: {maximum: 160}, format:{with: /\s*\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*\s*/}, if: ->{email.present?}
-        validates :location, presence: false, if: -> {document_type.eql?("09")}
 
 
         def initialize(args={})
@@ -35,10 +34,6 @@ module FE
         end
 
         def build_xml(node)
-          raise FE::Error("identification document not present or invalid",class: self.class, messages: {identification_document: ["blank"]}) if @identification_document.nil? || !@identification_document.is_a?(IdentificationDocument)
-          raise FE::Error("location not present or invalid",class: self.class, messages: {location: ["blank"]}) if @location.nil? || !@location.is_a?(Location)
-          raise FE::Error("phone not present or invalid",class: self.class, messages: {phone: ["blank"]}) if !@phone.nil? && !@phone.is_a?(Phone)
-          raise FE::Error("fax not present or invalid",class: self.class, messages: {fax: ["blank"]}) if !@fax.nil? && !@fax.is_a?(Fax)
           raise FE::Error("receiver invalid",class: self.class, messages: errors.messages) unless valid?
           
           node = Nokogiri::XML::Builder.new if node.nil?
