@@ -34,7 +34,7 @@ module FE
       end
 
       def build_xml(node)
-        raise FE::Error("invalid exoneration",class: self.class, messages: errors.messages) unless valid?
+        raise FE::Error.new("invalid exoneration",class: self.class, messages: errors.messages) unless valid?
         node = Nokogiri::XML::Builder.new if node.nil?
 
         node.Exoneracion do |xml|

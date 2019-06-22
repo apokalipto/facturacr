@@ -12,7 +12,7 @@ module FE
       end
       
       def build_xml(node)
-        raise FE::Error("other content",class: self.class, messages: errors.messages) unless valid?
+        raise FE::Error.new("other content",class: self.class, messages: errors.messages) unless valid?
         node = Nokogiri::XML::Builder.new if node.nil?         
         node.OtroContenido do |xml|
           @implementation.build_xml(xml)

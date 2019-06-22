@@ -34,7 +34,7 @@ module FE
         end
 
         def build_xml(node)
-          raise FE::Error("other charges invalid",class: self.class, messages: errors.messages) unless valid?
+          raise FE::Error.new("other charges invalid",class: self.class, messages: errors.messages) unless valid?
 
           node = Nokogiri::XML::Builder.new if node.nil?
 

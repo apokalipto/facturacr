@@ -11,7 +11,7 @@ module FE
       end
       
       def build_xml(node)
-        raise FE::Error("xml_attribues is not a hash",class: self.class) unless @xml_attributes.is_a?(Hash)
+        raise FE::Error.new("xml_attribues is not a hash",class: self.class) unless @xml_attributes.is_a?(Hash)
         
         node = Nokogiri::XML::Builder.new if node.nil?
         node.OtroTexto(@xml_attributes) do |xml|

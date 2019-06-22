@@ -14,7 +14,7 @@ module FE
       end
       
       def build_xml(node)
-        raise FE::Error("regulation invalid",class: self.class, messages: errors.messages) unless valid?
+        raise FE::Error.new("regulation invalid",class: self.class, messages: errors.messages) unless valid?
         node = Nokogiri::XML::Builder.new if node.nil?
         node.Normativa do |xml|
           xml.NumeroResolucion @number

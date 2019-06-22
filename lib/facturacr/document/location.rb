@@ -29,7 +29,7 @@ module FE
         end
 
         def build_xml(node)
-          raise FE::Error("location invalid",class: self.class, messages: errors.messages) unless valid?
+          raise FE::Error.new("location invalid",class: self.class, messages: errors.messages) unless valid?
           node = Nokogiri::XML::Builder.new if node.nil?
           node.Ubicacion do |x|
             x.Provincia @province

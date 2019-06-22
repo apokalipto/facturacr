@@ -38,7 +38,7 @@ module FE
       end
 
       def build_xml(node)
-        raise FE::Error("summary invalid",class: self.class, messages: errors.messages) unless valid?
+        raise FE::Error.new("summary invalid",class: self.class, messages: errors.messages) unless valid?
         node = Nokogiri::XML::Builder.new if node.nil?
 
         node.ResumenFactura do |xml|

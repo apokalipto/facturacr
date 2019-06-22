@@ -31,7 +31,7 @@ module FE
       end
 
       def build_xml(node)
-        raise FE::Error("reference invalid",class: self.class, messages: errors.messages) unless valid?
+        raise FE::Error.new("reference invalid",class: self.class, messages: errors.messages) unless valid?
         node = Nokogiri::XML::Builder.new if node.nil?
         node.InformacionReferencia do |xml|
           xml.TipoDoc @document_type
