@@ -1,4 +1,3 @@
-require "facturacr/document"
 require 'active_model'
 require 'nokogiri'
 
@@ -11,12 +10,21 @@ module FE
 
         attr_accessor :name, :identification_document, :comercial_name, :location, :phone, :fax, :email
 
-        validates :name, presence: true, length: { maximum: 100 }
+        validates :name, presence: true
         validates :identification_document, presence: true
-        validates :comercial_name, length: {maximum: 80}
         validates :location, presence: true
         validates :email, presence: true,length: {maximum: 160}, format:{with: /\s*\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*\s*/}
-
+        
+        with_options if: ->{ FE.configuration.version_42? } do
+          validates :name, length: { maximum: 80}
+          validates :comercial_name, length: { maximum: 80 }
+        end
+        
+        with_options if: ->{ FE.configuration.version_43? } do
+          validates :name, length: { maximum: 100}
+          validates :comercial_name, length: { maximum: 100 }
+        end
+        
 
         def initialize(args={})
           @name = args[:name]

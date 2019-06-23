@@ -11,13 +11,22 @@ module FE
 
         attr_accessor :name, :identification_document,:foreign_id_number, :comercial_name, :location, :phone, :fax, :email,:other_foreign_signs
 
-        validates :name, presence: true, length: { maximum: 100 }
+        validates :name, presence: true
+        
         validates :identification_document, presence: true, if: -> {:document_type.eql?("01") || :document_type.eql?("08")}
-        validates :comercial_name, length: { maximum: 80 }
         validates :foreign_id_number, length: { maximum: 20 }, if: -> {:document_type.eql?("01") || :document_type.eql?("08")}
         validates :other_foreign_signs,length: { maximum: 300 }
         validates :email, length: {maximum: 160}, format:{with: /\s*\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*\s*/}, if: ->{email.present?}
-
+        
+        with_options if: ->{ FE.configuration.version_42? } do
+          validates :name, length: { maximum: 80}
+          validates :comercial_name, length: { maximum: 80 }
+        end
+        
+        with_options if: ->{ FE.configuration.version_43? } do
+          validates :name, length: { maximum: 100}
+          validates :comercial_name, length: { maximum: 100 }
+        end
 
         def initialize(args={})
 
