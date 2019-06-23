@@ -70,7 +70,7 @@ module FE
     validates :regulation, presence: true, if: ->{ FE.configuration.version_42? }
     validates :security_code, presence: true, length: {is: 8}
     validates :references, presence: true, if: -> {document_type.eql?("02") || document_type.eql?("03")}
-    validates :items, presence:true, if: -> {document_type.eql?("08") || document_type.eql?("09")}
+    validates :items, presence:true
     validate :payment_types_ok?
     validates :other_charges, presence:true, if: ->{FE.configuration.version_43?}
     validates :other_charges, presence:false, if: ->{FE.configuration.version_42?}
