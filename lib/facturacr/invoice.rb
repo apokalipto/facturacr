@@ -15,7 +15,8 @@ module FE
         "xmlns"=>"https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/facturaElectronica"#,
       }}
     validates :receiver, presence: true, if: -> { FE.configuration.version_43? }
-
+    
+    DOCUMENT_TYPE = "01"
     def initialize(args={})
       @economic_activity = args[:economic_activity]
       @date = args[:date]
@@ -25,7 +26,7 @@ module FE
       @number = args[:number]
       @condition = args[:condition]
       @payment_type = args[:payment_type] || ["01"]
-      @document_type = "01"
+      @document_type = DOCUMENT_TYPE
       @credit_term = args[:credit_term]
       @summary = args[:summary]
       @regulation = args[:regulation] ||= FE::Document::Regulation.new

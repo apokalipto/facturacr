@@ -3,9 +3,10 @@ require 'facturacr/document'
 module FE
 
   class PurchaseInvoice < Document
-
+    DOCUMENT_TYPE = "08"
+    
     validates :receiver, presence: true, if: -> { FE.configuration.version_43? }
-
+    
     def initialize(args={})
       @economic_activity = args[:economic_activity]
       @date = args[:date]
@@ -15,7 +16,7 @@ module FE
       @number = args[:number]
       @condition = args[:condition]
       @payment_type = args[:payment_type] || ["01"]
-      @document_type = "08"
+      @document_type = DOCUMENT_TYPE
       @credit_term = args[:credit_term]
       @summary = args[:summary]
       @security_code = args[:security_code]

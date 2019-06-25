@@ -1,4 +1,5 @@
 require 'awesome_print'
+
 require 'facturacr'
 require 'facturacr/configuration'
 require 'facturacr/document'

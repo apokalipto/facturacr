@@ -15,15 +15,12 @@ module FE
         validates :location, presence: true
         validates :email, presence: true,length: {maximum: 160}, format:{with: /\s*\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*\s*/}
         
-        with_options if: ->{ FE.configuration.version_42? } do
-          validates :name, length: { maximum: 80}
-          validates :comercial_name, length: { maximum: 80 }
-        end
-        
-        with_options if: ->{ FE.configuration.version_43? } do
-          validates :name, length: { maximum: 100}
-          validates :comercial_name, length: { maximum: 100 }
-        end
+        validates :name, length: { maximum: 80}, if: ->{ FE.configuration.version_42? }
+        validates :comercial_name, length: { maximum: 80 }, if: ->{ FE.configuration.version_42? }
+
+        validates :name, length: { maximum: 100}, if: ->{ FE.configuration.version_43? }
+        validates :comercial_name, length: { maximum: 100 }, if: ->{ FE.configuration.version_43? }
+
         
 
         def initialize(args={})

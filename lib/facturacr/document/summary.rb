@@ -5,14 +5,17 @@ module FE
 
       attr_accessor :currency, :exchange_rate, :services_taxable_total, :services_exent_total, :services_exonerate_total,
                     :goods_taxable_total,:goods_exent_total,:goods_exonerate_total, :taxable_total, :exent_total,:exonerate_total,
-                    :subtotal, :discount_total, :gross_total, :tax_total,:total_iva_returned,:total_others_charges, :net_total,  :with_credit_card
-      #TODO verificar que si la moneda es de otro pais el tipo de cambio debe estar agregado
-      #validates :exchange_rate, presence: true, if: -> { currency.present? }
+                    :subtotal, :discount_total, :gross_total, :tax_total,:total_iva_returned,:total_others_charges, :net_total,  
+                    :with_credit_card, :document_type, :has_exoneration, :medical_services_condition
+      
       validates :currency, presence: true
-      validates :services_exonerate_total, presence:false, if: -> {:document_type.eql?("09") || FE.configuration.version_43?}
-      validates :goods_exonerate_total, presence:false, if: -> {:document_type.eql?("09") || FE.configuration.version_43?}
-      validates :exonerate_total, presence:false, if: -> {:document_type.eql?("09")|| FE.configuration.version_43?}
-      #validates :total_iva_returned, presence: true, if: -> { FE.configuration.version_43? ) }
+      validates :exchange_rate, presence: true, if: -> { currency.present? && currency != "CRC" }
+      
+      validates :services_exonerate_total, presence: true, if: -> { FE.configuration.version_43? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && has_exoneration}
+      validates :goods_exonerate_total, presence: true, if: -> { FE.configuration.version_43? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && has_exoneration}
+      validates :exonerate_total, presence: true, if: -> { FE.configuration.version_43? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && has_exoneration}        
+    
+      validates :total_iva_returned, presence: true, if: -> { FE.configuration.version_43? && medical_services_condition }
       validate :totals_ok?
 
       def initialize(args={})
@@ -34,7 +37,8 @@ module FE
         @total_iva_returned = args[:total_iva_returned].to_f
         @total_others_charges =args[:total_others_charges].to_f
         @net_total = args[:net_total].to_f
-
+        @has_exoneration = args[:has_exoneration] || false
+        @medical_services_condition if args[:medical_services_condition] || false
       end
 
       def build_xml(node)

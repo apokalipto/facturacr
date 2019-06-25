@@ -16,27 +16,29 @@ module FE
       }.freeze
 
       attr_accessor :line_number,:tariff_item,:code, :comercial_code_type, :comercial_code, :quantity, :unit, :description, :unit_price, :total,
-                    :discount, :discount_reason, :subtotal,:taxable_base ,:taxes,:net_tax ,:net_total, :exoneration
+                    :discount, :discount_reason, :subtotal,:taxable_base ,:taxes,:net_tax ,:net_total, :exoneration, :document_type
 
+      validates :document_type, presence: true, inclusion: FE::Document::DOCUMENT_TYPES.keys
       validates :line_number, presence: true
-      validates :tariff_item, presence: true, if:->{document_type.eql?() && (FE.configuration.version_43?)}
-      validates :comercial_code_type, inclusion: CODE_TYPES.keys, if: -> { comercial_code.present? }
+      validates :tariff_item, presence: true, if:->{document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && (FE.configuration.version_43?)}
       validates :quantity, presence: true, numericality: { greater_than: 0 }
       validates :unit, presence: true, inclusion: UNITS
-      validates :description, presence: true, length: { maximum: 200 }, if:->{document_type.eql?("09") || document_type.eql?("08") }
+      validates :description, presence: true, length: { maximum: 200 }
       validates :unit_price, presence: true
       validates :total, presence: true
       validates :discount, numericality: { grater_than: 0 }, if: -> { discount.present? }
       validates :discount_reason, presence: true, if: -> { discount.present? }
       validates :subtotal, presence: true
       validates :taxable_base, presence: true, if: ->{ taxes.map{ |t| t.code.eql?("07")}.include?(true) && FE.configuration.version_43? }
-      validates :net_tax,presence:true, if: ->{exoneration.present?}
+      validates :net_tax,presence:true, if: ->{ exoneration.present? }
       validates :net_total, presence: true
+      validates :comercial_code_type, inclusion: CODE_TYPES.keys, if: -> { comercial_code.present? }
       validates :comercial_code, presence: true, length: {maximum: 20}
-      validates :code, length: {maximum: 13}, if: ->{FE.configuration.version_43?}
+      validates :code, length: {maximum: 13} #TODO this will be mandatory after 2020-01-01
 
 
       def initialize(args = {})
+        @document_type = args[:document_type]
         @line_number = args[:line_number]
         @code = args[:code]
         @comercial_code_type = args[:comercial_code_type].presence || '01'
@@ -54,11 +56,11 @@ module FE
         @exoneration = args[:exoneration]
         @net_tax = args[:net_tax]
         @tariff_item = args[:tariff_item]
-
+        
 
       end
 
-      def build_xml(node)
+      def build_xml(node = nil)
         raise FE::Error.new("item invalid",class: self.class, messages: errors.messages) unless valid?
 
         node = Nokogiri::XML::Builder.new if node.nil?
@@ -66,8 +68,10 @@ module FE
           x.NumeroLinea @line_number
 
           x.PartidaArancelaria @tariff_item if @tariff_item.present? && FE.configuration.version_43?
-
-          x.Codigo @code if @code.present? && FE.configuration.version_43?
+          
+          if FE.configuration.version_43?
+            x.Codigo @code if @code.present?
+          end
 
           if @comercial_code.present? && FE.configuration.version_43?
             x.CodigoComercial do |x2|

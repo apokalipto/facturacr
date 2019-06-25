@@ -13,7 +13,9 @@ module FE
         "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
         "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
         "xmlns"=>"https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/notaDebitoElectronica"#,
-      }}
+      }
+    }
+    DOCUMENT_TYPE = "02"
     def initialize(args={})
       @economic_activity = args[:economic_activity]
       @date = args[:date]
@@ -23,7 +25,7 @@ module FE
       @number = args[:number]
       @condition = args[:condition]
       @payment_type = args[:payment_type] || ["01"]
-      @document_type = "02"
+      @document_type = DOCUMENT_TYPE
       @credit_term = args[:credit_term]
       @summary = args[:summary]
       @regulation = args[:regulation] ||= FE::Document::Regulation.new
