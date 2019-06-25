@@ -32,23 +32,13 @@ module FE
       "05"=> "Nota de despacho",
       "06"=> "Contrato",
       "07"=> "Procedimiento",
-      "08"=> "Comprobante Emitido en Contingencia",
-      "09"=> "Devolución mercadería",
-      "10"=> "Sustituye factura rechazada por el Ministerio de Hacienda",
-      "11"=> "Sustituye factura rechazada por el Receptor del comprobante",
-      "12"=> "Sustituye Factura de exportación",
-      "13"=> "Facturación mes vencido",
-      "99"=> "Otros"
-
+      "08"=> "Factura Electrónica de compra",
+      "09"=> "Factura Electronica de exportación"
     }.freeze
     DOCUMENT_SITUATION = {
       "1" => "Normal",
       "2" => "Contingencia",
       "3" => "Sin Internet"
-    }.freeze
-
-    ECONOMIC_ACTIVITIES = {
-      "01"=>"Actividad 1"
     }.freeze
 
     attr_accessor :serial, :date, :issuer, :receiver, :condition, :credit_term,
@@ -57,7 +47,7 @@ module FE
                   :items, :references, :namespaces, :summary, :document_situation,
                   :headquarters, :terminal, :others, :key, :economic_activity, :other_charges, :document
 
-    validates :economic_activity, presence: true, inclusion: ECONOMIC_ACTIVITIES.keys, if: ->{ FE.configuration.version_43? }
+    validates :economic_activity, presence: true, if: ->{ FE.configuration.version_43? }
     validates :date, presence: true
     validates :number, presence: true
     validates :issuer, presence: true
@@ -72,9 +62,7 @@ module FE
     validates :references, presence: true, if: -> {document_type.eql?("02") || document_type.eql?("03")}
     validates :items, presence:true
     validate :payment_types_ok?
-    validates :other_charges, presence:true, if: ->{FE.configuration.version_43?}
-    validates :other_charges, presence:false, if: ->{FE.configuration.version_42?}
-
+    
     def initialize
       raise FE::Error "Subclasses must implement this method"
     end
@@ -142,7 +130,7 @@ module FE
         end
 
 
-        other_charges.build_xml(xml) if FE.configuration.version_43? # see this
+        other_charges.build_xml(xml) if other_charges.present? && FE.configuration.version_43? # see this
 
         summary.build_xml(xml)
 
@@ -152,7 +140,7 @@ module FE
           end
         end
 
-        regulation.build_xml(xml)  if FE.configuration.version_42? # see this
+        regulation.build_xml(xml)  if FE.configuration.version_42?
 
         if others.any?
           xml.Otros do |x|

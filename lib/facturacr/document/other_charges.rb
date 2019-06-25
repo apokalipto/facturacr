@@ -4,7 +4,7 @@ module FE
 
         include ActiveModel::Validations
 
-        OTHER_DOCUMENT_TYPES ={ #talk about this
+        OTHER_DOCUMENT_TYPES = {
 
             "01" => "Contribución parafiscal",
             "02" => "Timbre de la Cruz Roja",
@@ -19,10 +19,10 @@ module FE
         attr_accessor :document_type, :collector_id_number, :collector_name, :detail, :percentage, :total_charge
 
         validates :document_type, presence: true, inclusion: OTHER_DOCUMENT_TYPES.keys
-        validates :collector_id_number, presence: false, if: ->{:document_type.eql?("09")|| :document_type.eql?("08")}
+        validates :collector_id_number, presence: false, if: ->{ document_type.eql?("04") }
         validates :detail, presence: true
         validates :total_charge, presence: true
-        validates :collector_name, presence: false, if: ->{:document_type.eql?("09")|| :document_type.eql?("08")}
+        validates :collector_name, presence: false, if: ->{ document_type.eql?("04") }
 
         def initialize(args={})
           @document_type = args[:document_type]
