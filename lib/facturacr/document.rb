@@ -108,8 +108,8 @@ module FE
       builder  = Nokogiri::XML::Builder.new(encoding: 'UTF-8')
 
       builder.send(document_tag, @namespaces) do |xml|
-        xml.CodigoActividad @economic_activity if FE.configuration.version_43?
         xml.Clave key
+        xml.CodigoActividad @economic_activity if FE.configuration.version_43?
         xml.NumeroConsecutivo sequence
         xml.FechaEmision @date.xmlschema
         issuer.build_xml(xml)
