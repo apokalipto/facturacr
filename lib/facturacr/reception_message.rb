@@ -32,7 +32,7 @@ module FE
     }
 
     attr_accessor :key, :date, :issuer_id_number, :receiver_id_number, :message, :details, :economic_activity,
-    :tax_condition,:tax_to_credit, :spending_to_apply,:tax, :total, :number, :receiver_id_type, :security_code,
+    :tax_condition,:creditable_tax, :applicable_expense,:tax, :total, :number, :receiver_id_type, :security_code,
     :document_situation, :issuer_id_type
 
     validates :date, presence: true
@@ -46,6 +46,9 @@ module FE
     validates :security_code, presence: true, length: {is: 8}
     validates :issuer_id_type, presence: true
     validates :receiver_id_type, presence: true
+    validates :economic_activity, presence: true, if: ->{ version_43? && tax_condition != "05"}
+    validates :creditable_tax, presence: true, if: -> { version_43? && tax_condition != "05" && (creditable_tax.present? && tax != creditable_tax) )}
+    validates :applicable_expense, presence: true, if: -> { version_43? && tax_condition != "05" && (applicable_tax.present? && tax != creditable_tax) )}
 
     def initialize(args = {})
       @version = args[:version]
@@ -98,10 +101,10 @@ module FE
         xml.FechaEmisionDoc @date.xmlschema
         xml.Mensaje @message
         xml.DetalleMensaje @details if @details
-        xml.CodigoActividad @economic_activity if version_43?
+        xml.CodigoActividad @economic_activity if version_43? && @economic_activity.present?
         xml.CondicionImpuesto @tax_condition if version_43?
-        xml.MontoImpuestoAcreditar @tax_to_credit if version_43?
-        xml.MontoTotalDeGastoAplicable @spending_to_apply if version_43?
+        xml.MontoImpuestoAcreditar @creditable_tax.to_f if version_43? && @creditable_tax.present?
+        xml.MontoTotalDeGastoAplicable @applicable_expense.to_f if version_43? && @applicable_expense.present?
         xml.MontoTotalImpuesto @tax.to_f if @tax
         xml.TotalFactura @total
         xml.NumeroCedulaReceptor @receiver_id_number
