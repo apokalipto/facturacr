@@ -115,13 +115,14 @@ module FE
         xml.FechaEmisionDoc @date.xmlschema
         xml.Mensaje @message
         xml.DetalleMensaje @details if @details
+        xml.MontoTotalImpuesto @tax.to_f if @tax
         if version_43? && @original_version.eql?("4.3")
           xml.CodigoActividad @economic_activity if @economic_activity.present?
           xml.CondicionImpuesto @tax_condition
           xml.MontoImpuestoAcreditar @creditable_tax.to_f if @creditable_tax.present?
           xml.MontoTotalDeGastoAplicable @applicable_expense.to_f if @applicable_expense.present?
         end
-        xml.MontoTotalImpuesto @tax.to_f if @tax
+        
         xml.TotalFactura @total
         xml.NumeroCedulaReceptor @receiver_id_number
         xml.NumeroConsecutivoReceptor sequence
