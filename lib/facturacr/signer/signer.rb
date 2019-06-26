@@ -52,7 +52,7 @@ module FE
       @x509 = @p12.certificate
       @output_path = args[:output_path]
       @document_tag = @doc.elements.first.name
-      @version = @doc.elements.first.attr('xmlns').scan(/v4\..{1}/).first[1..-1]
+      @version = @doc.elements.first.namespace.href.scan(/v4\..{1}/).first[1..-1]
       @xmlns_map = XMLNS_MAP_42 if @version.eql?("4.2")
       @xmlns_map = XMLNS_MAP_43 if @version.eql?("4.3")
     end
