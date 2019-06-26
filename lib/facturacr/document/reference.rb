@@ -2,7 +2,7 @@ require 'facturacr/document'
 
 module FE
   class Document
-    class Reference
+    class Reference < Element
       include ActiveModel::Validations
 
       attr_accessor :document_type, :number, :date, :code, :reason
@@ -49,7 +49,7 @@ module FE
         @reason = args[:reason]
       end
 
-      def build_xml(node)
+      def build_xml(node, document)
         raise FE::Error.new("reference invalid",class: self.class, messages: errors.messages) unless valid?
         node = Nokogiri::XML::Builder.new if node.nil?
         node.InformacionReferencia do |xml|

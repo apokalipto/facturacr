@@ -1,6 +1,6 @@
 module FE
   class Document
-    class OtherText
+    class OtherText < Element
       attr_accessor :xml_attributes, :content
       
 
@@ -10,7 +10,7 @@ module FE
         @content = args[:content]
       end
       
-      def build_xml(node)
+      def build_xml(node, document)
         raise FE::Error.new("xml_attribues is not a hash",class: self.class) unless @xml_attributes.is_a?(Hash)
         
         node = Nokogiri::XML::Builder.new if node.nil?

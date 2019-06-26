@@ -4,7 +4,7 @@ require 'nokogiri'
 
 module FE
   class Document
-    class PhoneType
+    class PhoneType < Element
       include ActiveModel::Validations
       
       attr_accessor :tag_name, :country_code, :number
@@ -20,7 +20,7 @@ module FE
         @number = number
       end
       
-      def build_xml(node)
+      def build_xml(node, document)
         raise FE::Error.new("phone type invalid",class: self.class, messages: errors.messages) unless valid?
         
         node = Nokogiri::XML::Builder.new if node.nil?         
@@ -30,8 +30,8 @@ module FE
         end
       end
       
-      def to_xml(builder)
-        build_xml(builder).to_xml
+      def to_xml(builder,document)
+        build_xml(builder, document).to_xml
       end
     end
   end

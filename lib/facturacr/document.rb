@@ -45,9 +45,10 @@ module FE
                   :payment_type, :service_type, :reference_information,
                   :regulation, :number, :document_type, :security_code,
                   :items, :references, :namespaces, :summary, :document_situation,
-                  :headquarters, :terminal, :others, :key, :economic_activity, :other_charges, :document
-
-    validates :economic_activity, presence: true, if: ->{ FE.configuration.version_43? }
+                  :headquarters, :terminal, :others, :key, :economic_activity, :other_charges, :version
+    
+    validates :version, presence: true
+    validates :economic_activity, presence: true, if: ->{ version.eql?("4.3") }
     validates :date, presence: true
     validates :number, presence: true
     validates :issuer, presence: true
@@ -57,7 +58,7 @@ module FE
     validates :document_type, presence: true, inclusion: DOCUMENT_TYPES.keys
     validates :document_situation, presence: true, inclusion: DOCUMENT_SITUATION.keys
     validates :summary, presence: true
-    validates :regulation, presence: true, if: ->{ FE.configuration.version_42? }
+    validates :regulation, presence: true, if: ->{ version.eql?("4.3") }
     validates :security_code, presence: true, length: {is: 8}
     validates :references, presence: true, if: -> {document_type.eql?("02") || document_type.eql?("03")}
     validates :items, presence:true
@@ -102,6 +103,14 @@ module FE
       cons = ("%010d" % @number)
       "#{headquarters}#{terminal}#{@document_type}#{cons}"
     end
+    
+    def version_42?
+      @version.eql?("4.2")
+    end
+    
+    def version_43?
+      @version.eql?("4.3")
+    end
 
     def build_xml
       raise FE::Error.new "Documento inválido", class: self.class, messages: errors.messages unless valid?
@@ -109,11 +118,11 @@ module FE
 
       builder.send(document_tag, @namespaces) do |xml|
         xml.Clave key
-        xml.CodigoActividad @economic_activity if FE.configuration.version_43?
+        xml.CodigoActividad @economic_activity if version_43?
         xml.NumeroConsecutivo sequence
         xml.FechaEmision @date.xmlschema
-        issuer.build_xml(xml)
-        receiver.build_xml(xml) if receiver.present?
+        issuer.build_xml(xml, self)
+        receiver.build_xml(xml,self) if receiver.present?
         xml.CondicionVenta @condition
         xml.PlazoCredito @credit_term if @credit_term.present? && @condition.eql?("02")
 
@@ -125,27 +134,27 @@ module FE
 
         xml.DetalleServicio do |x|
           @items.each do |item|
-            item.build_xml(x)
+            item.build_xml(x, self)
           end
         end
 
 
-        other_charges.build_xml(xml) if other_charges.present? && FE.configuration.version_43? # see this
+        other_charges.build_xml(xml,self) if other_charges.present? && version_43? # see this
 
-        summary.build_xml(xml)
+        summary.build_xml(xml, self)
 
         if references.present?
           references.each do |r|
-            r.build_xml(xml)
+            r.build_xml(xml, self)
           end
         end
 
-        regulation.build_xml(xml)  if FE.configuration.version_42?
+        regulation.build_xml(xml,self)  if version_42?
 
         if others.any?
           xml.Otros do |x|
             @others.each do |o|
-              o.build_xml(x)
+              o.build_xml(x, self)
             end
           end
         end

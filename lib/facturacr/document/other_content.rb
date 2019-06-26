@@ -1,6 +1,6 @@
 module FE
   class Document
-    class OtherContent
+    class OtherContent < Element
       include ActiveModel::Validations
       attr_accessor :implementation
       
@@ -11,16 +11,16 @@ module FE
         @implementation = args[:implementation]
       end
       
-      def build_xml(node)
+      def build_xml(node, document)
         raise FE::Error.new("other content",class: self.class, messages: errors.messages) unless valid?
         node = Nokogiri::XML::Builder.new if node.nil?         
         node.OtroContenido do |xml|
-          @implementation.build_xml(xml)
+          @implementation.build_xml(xml, document)
         end
       end
       
-      def to_xml(builder)
-        build_xml(builder).to_xml
+      def to_xml(builder,document)
+        build_xml(builder,document).to_xml
       end
       
     end

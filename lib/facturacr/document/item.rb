@@ -1,6 +1,6 @@
 module FE
   class Document
-    class Item
+    class Item < Element
       include ActiveModel::Validations
 
       UNITS = %w[ Al Alc Cm I Os Spe St Sp m kg s A K mol cd m² m³ m/s m/s² 1/m kg/m³ A/m² A/m mol/m³ cd/m² 1 rad sr Hz N Pa J W C V F Ω S Wb T H °C lm
@@ -20,7 +20,7 @@ module FE
 
       validates :document_type, presence: true, inclusion: FE::Document::DOCUMENT_TYPES.keys
       validates :line_number, presence: true
-      validates :tariff_item, presence: true, if:->{document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && (FE.configuration.version_43?)}
+      validates :tariff_item, presence: true, if:->{document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && (document.version_43?)}
       validates :quantity, presence: true, numericality: { greater_than: 0 }
       validates :unit, presence: true, inclusion: UNITS
       validates :description, presence: true, length: { maximum: 200 }
@@ -29,7 +29,7 @@ module FE
       validates :discount, numericality: { grater_than: 0 }, if: -> { discount.present? }
       validates :discount_reason, presence: true, if: -> { discount.present? }
       validates :subtotal, presence: true
-      validates :taxable_base, presence: true, if: ->{ taxes.map{ |t| t.code.eql?("07")}.include?(true) && FE.configuration.version_43? }
+      validates :taxable_base, presence: true, if: ->{ taxes.map{ |t| t.code.eql?("07")}.include?(true) && document.version_43? }
       validates :net_tax,presence:true, if: ->{ exoneration.present? }
       validates :net_total, presence: true
       validates :comercial_code_type, inclusion: CODE_TYPES.keys, if: -> { comercial_code.present? }
@@ -60,27 +60,28 @@ module FE
 
       end
 
-      def build_xml(node = nil)
+      def build_xml(node, document)
+        @document = document
         raise FE::Error.new("item invalid",class: self.class, messages: errors.messages) unless valid?
 
         node = Nokogiri::XML::Builder.new if node.nil?
         node.LineaDetalle do |x|
           x.NumeroLinea @line_number
 
-          x.PartidaArancelaria @tariff_item if @tariff_item.present? && FE.configuration.version_43?
+          x.PartidaArancelaria @tariff_item if @tariff_item.present? && document.version_43?
           
-          if FE.configuration.version_43?
+          if document.version_43?
             x.Codigo @code if @code.present?
           end
 
-          if @comercial_code.present? && FE.configuration.version_43?
+          if @comercial_code.present? && document.version_43?
             x.CodigoComercial do |x2|
               x2.Tipo @comercial_code_type
               x2.Codigo @comercial_code
             end
           end
 
-          if @comercial_code.present? && FE.configuration.version_42?
+          if @comercial_code.present? && document.version_42?
             x.Codigo do |x2|
               x2.Tipo @comercial_code_type
               x2.Codigo @comercial_code
@@ -102,9 +103,9 @@ module FE
 
           x.SubTotal @subtotal
 
-          x.BaseImponible @taxable_base if @taxable_base.present? && FE.configuration.version_43?
+          x.BaseImponible @taxable_base if @taxable_base.present? && document.version_43?
           @taxes.each do |tax|
-            tax.build_xml(x)
+            tax.build_xml(x,document)
           end
 
           x.ImpuestoNeto @net_tax if @net_tax.present? && @exoneration.present?

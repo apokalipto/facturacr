@@ -14,10 +14,11 @@ module FE
         "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
         "xmlns"=>"https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/facturaElectronica"#,
       }}
-    validates :receiver, presence: true, if: -> { FE.configuration.version_43? }
+    validates :receiver, presence: true, if: -> { version.eql?("4.3") }
     
     DOCUMENT_TYPE = "01"
     def initialize(args={})
+      @version = args[:version]
       @economic_activity = args[:economic_activity]
       @date = args[:date]
       @issuer = args[:issuer]
@@ -33,7 +34,7 @@ module FE
       @security_code = args[:security_code]
       @document_situation = args[:document_situation]
       @other_charges = args[:other_charges]
-      @namespaces = NAMESPACES[FE.configuration.version] || NAMESPACES["4.2"]
+      @namespaces = NAMESPACES[@version]
       @others = args[:others] || []
     end
 

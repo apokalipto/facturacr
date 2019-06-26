@@ -2,6 +2,7 @@ require 'awesome_print'
 
 require 'facturacr'
 require 'facturacr/configuration'
+require 'facturacr/element'
 require 'facturacr/document'
 require 'facturacr/invoice'
 require 'facturacr/credit_note'

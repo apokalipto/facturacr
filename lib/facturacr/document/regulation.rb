@@ -1,6 +1,6 @@
 module FE
   class Document
-    class Regulation
+    class Regulation < Element
       include ActiveModel::Validations
       
       attr_accessor :number, :date
@@ -13,7 +13,7 @@ module FE
         @date = args[:date] ||= "20-02-2017 13:22:22"
       end
       
-      def build_xml(node)
+      def build_xml(node, document)
         raise FE::Error.new("regulation invalid",class: self.class, messages: errors.messages) unless valid?
         node = Nokogiri::XML::Builder.new if node.nil?
         node.Normativa do |xml|

@@ -1,6 +1,6 @@
 module FE
   class Document
-    class Tax
+    class Tax < Element
       include ActiveModel::Validations
 
       TAX_CODES = {
@@ -27,7 +27,7 @@ module FE
       }.freeze
       attr_accessor :code, :rate_code ,:rate, :iva_factor, :total, :exoneration, :total_exportation
 
-      validates :rate_code, inclusion: RATE_CODES.keys, presence: true, if:->{ FE.configuration.version_43?}
+      validates :rate_code, inclusion: RATE_CODES.keys, presence: true, if:->{ document.version_43?}
       validates :code, presence: true, inclusion: TAX_CODES.keys
     #  validates :total_exportation, presence: false, if:->{:document_type.eql?("01") || :document_type.eql?("08") || :document_type.eql?("04")}
       # It is a mandatory field when a tax is added. And it is a decimal number that can be composed of 4 integers and 2 decimals
@@ -50,21 +50,21 @@ module FE
       end
 
 
-      def build_xml(node)
-
+      def build_xml(node, document)
+        @document = document
         raise FE::Error.new("tax invalid",class: self.class, messages: errors.messages) unless valid?
         node = Nokogiri::XML::Builder.new if node.nil?
 
         node.Impuesto do |xml|
           xml.Codigo @code
-          xml.CodigoTarifa @rate_code if @rate_code.present? && FE.configuration.version_43?
+          xml.CodigoTarifa @rate_code if @rate_code.present? && document.version_43?
           xml.Tarifa @rate
-          xml.FactorIva @iva_factor if @iva_factor.present? && FE.configuration.version_43?
+          xml.FactorIva @iva_factor if @iva_factor.present? && document.version_43?
           xml.Monto @total
-          xml.MontoExportacion @total_exportation if @total_exportation.present? && FE.configuration.version_43?
+          xml.MontoExportacion @total_exportation if @total_exportation.present? && document.version_43?
 
          if exoneration.present?
-         exoneration.build_xml(xml)
+           exoneration.build_xml(xml,document)
          end
 
         end

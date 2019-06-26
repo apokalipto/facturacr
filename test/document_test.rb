@@ -26,9 +26,15 @@ class DocumentTest < Minitest::Test
     others = [FE::Document::OtherText.new(xml_attributes: {"code"=>"my123456"}, content: "This is the custom value")]
 
     payment =["01","03"]
-    invoice = FE::Invoice.new date: Time.now, issuer: issuer, receiver: receiver, number: 1, items: items, condition: "01", summary: summary, security_code: "12345678", document_situation: "1", others: others,payment_type: payment    
-  
-    xml = invoice.generate
+    invoice = FE::Invoice.new date: Time.now, issuer: issuer, receiver: receiver, number: 1, items: items, condition: "01", summary: summary, security_code: "12345678", document_situation: "1", others: others,payment_type: payment, version: FE.configuration.version
+    
+    begin
+      xml = invoice.generate
+    rescue => e
+      puts e.message
+      ap e.messages if e.respond_to?(:messages)
+      raise "ERROR"
+    end
   
   end
 
@@ -51,9 +57,15 @@ class DocumentTest < Minitest::Test
     others = [FE::Document::OtherText.new(xml_attributes: {"code"=>"my123456"}, content: "This is the custom value")]
 
     payment =["01","03"]
-    invoice = FE::Ticket.new date: Time.now, issuer: issuer, receiver: receiver, number: 1, items: items, condition: "01", summary: summary, security_code: "12345678", document_situation: "1", others: others, payment_type: payment
-
-    invoice.generate
+    invoice = FE::Ticket.new date: Time.now, issuer: issuer, receiver: receiver, number: 1, items: items, condition: "01", summary: summary, security_code: "12345678", document_situation: "1", others: others, payment_type: payment, version: FE.configuration.version
+    
+    begin
+      xml = invoice.generate
+    rescue => e
+      puts "#{e.message}"
+      raise "ERROR"
+    end
+    
   end
 
   def test_document_can_set_key_manually
@@ -69,8 +81,7 @@ class DocumentTest < Minitest::Test
     location = FE::Document::Location.new province: "1",county: "01", district: "01", others: "Otras señas"
     issuer = FE::Document::Issuer.new name: "#{long_name} MAX", identification_document: id_document, location: location, phone: phone, email: "emisor@ejemplo.com"
     
-    exception = assert_raises(FE::Error){issuer.build_xml(nil)}
-    ap exception
+    exception = assert_raises(FE::Error){issuer.build_xml(nil, FE::Invoice.new(version: "4.2"))}
   end
 
 

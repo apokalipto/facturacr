@@ -6,7 +6,7 @@ module FE
   class Document
 
 
-      class Location
+      class Location < Element
         include ActiveModel::Validations
 
         attr_accessor :province, :county,:district,:neighborhood, :others
@@ -28,7 +28,7 @@ module FE
 
         end
 
-        def build_xml(node)
+        def build_xml(node, document)
           raise FE::Error.new("location invalid",class: self.class, messages: errors.messages) unless valid?
           node = Nokogiri::XML::Builder.new if node.nil?
           node.Ubicacion do |x|
@@ -40,8 +40,8 @@ module FE
           end
         end
 
-        def to_xml(builder)
-          build_xml(builder).to_xml
+        def to_xml(builder,document)
+          build_xml(builder,document).to_xml
         end
 
       end

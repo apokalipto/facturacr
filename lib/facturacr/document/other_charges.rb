@@ -1,6 +1,6 @@
 module FE
   class Document
-    class OtherCharges
+    class OtherCharges < Element
 
         include ActiveModel::Validations
 
@@ -33,7 +33,7 @@ module FE
           @total_charge = args[:total_charge]
         end
 
-        def build_xml(node)
+        def build_xml(node, document)
           raise FE::Error.new("other charges invalid",class: self.class, messages: errors.messages) unless valid?
 
           node = Nokogiri::XML::Builder.new if node.nil?

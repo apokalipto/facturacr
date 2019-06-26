@@ -6,25 +6,25 @@ module FE
   class Document
 
 
-      class Receiver
+      class Receiver < Element
         include ActiveModel::Validations
 
-        attr_accessor :name, :identification_document,:foreign_id_number, :comercial_name, :location, :phone, :fax, :email,:other_foreign_signs
+        attr_accessor :name, :identification_document,:foreign_id_number, :comercial_name, :location, :phone, :fax, :email,:other_foreign_signs, :document_type
 
         validates :name, presence: true
         
-        validates :identification_document, presence: true, if: -> {:document_type.eql?("01") || :document_type.eql?("08")}
-        validates :foreign_id_number, length: { maximum: 20 }, if: -> {:document_type.eql?("01") || :document_type.eql?("08")}
+        validates :identification_document, presence: true, if: -> {document_type.eql?("01") || document_type.eql?("08")}
+        validates :foreign_id_number, length: { maximum: 20 }, if: -> {document_type.eql?("01") || document_type.eql?("08")}
         validates :other_foreign_signs,length: { maximum: 300 }
-        validates :email, length: {maximum: 160}, format:{with: /\s*\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*\s*/}, if: ->{email.present?}
+        validates :email, length: {maximum: 160}, format:{with: /\s*\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*\s*/}, if: ->{ email.present? }
         
 
-        validates :name, length: { maximum: 80}, if: ->{ FE.configuration.version_42? }
-        validates :comercial_name, length: { maximum: 80 }, if: ->{ FE.configuration.version_42? }
+        validates :name, length: { maximum: 80}, if: ->{ document.version_42? }
+        validates :comercial_name, length: { maximum: 80 }, if: ->{ document.version_42? }
     
 
-        validates :name, length: { maximum: 100}, if: ->{ FE.configuration.version_43? }
-        validates :comercial_name, length: { maximum: 100 }, if: ->{ FE.configuration.version_43? }
+        validates :name, length: { maximum: 100}, if: ->{ document.version_43? }
+        validates :comercial_name, length: { maximum: 100 }, if: ->{ document.version_43? }
 
 
         def initialize(args={})
@@ -41,25 +41,26 @@ module FE
 
         end
 
-        def build_xml(node)
+        def build_xml(node, document)
+          @document = document
           raise FE::Error.new("receiver invalid",class: self.class, messages: errors.messages) unless valid?
           
           node = Nokogiri::XML::Builder.new if node.nil?
           node.Receptor do |xml|
             xml.Nombre @name
-            @identification_document.build_xml(xml) if @identification_document.present?
+            @identification_document.build_xml(xml,@document) if @identification_document.present?
             xml.IdentificacionExtranjero foreign_id_number if @foreign_id_number.present?
             xml.NombreComercial @comercial_name if @comercial_name.present?
-            @location.build_xml(xml) if @location.present?
-            @phone.build_xml(xml) if @phone.present?
-            @fax.build_xml(xml) if @fax.present?
+            @location.build_xml(xml,@document) if @location.present?
+            @phone.build_xml(xml, @document) if @phone.present?
+            @fax.build_xml(xml, @document) if @fax.present?
             xml.CorreoElectronico @email if @email.present?
-            xml.OtrasSenasExtranjero @other_foreign_signs if @other_foreign_signs.present? &&  FE.configuration.version_43?
+            xml.OtrasSenasExtranjero @other_foreign_signs if @other_foreign_signs.present? &&  @document.version_43?
           end
         end
 
-        def to_xml(builder)
-          build_xml(builder).to_xml
+        def to_xml(builder, document)
+          build_xml(builder, document).to_xml
         end
       end
 

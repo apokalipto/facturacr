@@ -25,7 +25,7 @@ module FE
           end
         end
         
-        def build_xml(node)
+        def build_xml(node, document)
           raise FE::Error.new("invalid identification document", class: self.class, messages: errors.messages) unless valid?
           node = Nokogiri::XML::Builder.new if node.nil?         
           node.Identificacion do |x|
@@ -33,8 +33,8 @@ module FE
             x.Numero raw_id_number
           end
         end      
-        def to_xml(builder)
-          build_xml(builder).to_xml
+        def to_xml(builder, document)
+          build_xml(builder,document).to_xml
         end
       end
     

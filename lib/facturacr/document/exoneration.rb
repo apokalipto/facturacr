@@ -1,6 +1,6 @@
 module FE
   class Document
-    class Exoneration
+    class Exoneration < Element
       include ActiveModel::Validations
 
 
@@ -33,7 +33,8 @@ module FE
 
       end
 
-      def build_xml(node)
+      def build_xml(node, document)
+        @document = document
         raise FE::Error.new("invalid exoneration",class: self.class, messages: errors.messages) unless valid?
         node = Nokogiri::XML::Builder.new if node.nil?
 

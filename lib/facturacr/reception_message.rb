@@ -48,6 +48,7 @@ module FE
     validates :receiver_id_type, presence: true
 
     def initialize(args = {})
+      @version = args[:version]
       @key = args[:key]
       @date = args[:date]
       @issuer_id_type = args[:issuer_id_type]
@@ -61,7 +62,7 @@ module FE
       @number = args[:number].to_i
       @security_code = args[:security_code]
       @document_situation = args[:document_situation]
-      @namespaces = NAMESPACES[FE.configuration.version] || NAMESPACES["4.2"]
+      @namespaces = NAMESPACES[@version]
     end
 
 

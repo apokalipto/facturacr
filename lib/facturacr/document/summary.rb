@@ -1,6 +1,6 @@
 module FE
   class Document
-    class Summary
+    class Summary < Element
       include ActiveModel::Validations
 
       attr_accessor :currency, :exchange_rate, :services_taxable_total, :services_exent_total, :services_exonerate_total,
@@ -11,11 +11,11 @@ module FE
       validates :currency, presence: true
       validates :exchange_rate, presence: true, if: -> { currency.present? && currency != "CRC" }
       
-      validates :services_exonerate_total, presence: true, if: -> { FE.configuration.version_43? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && has_exoneration}
-      validates :goods_exonerate_total, presence: true, if: -> { FE.configuration.version_43? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && has_exoneration}
-      validates :exonerate_total, presence: true, if: -> { FE.configuration.version_43? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && has_exoneration}        
+      validates :services_exonerate_total, presence: true, if: -> { document.version_43? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && has_exoneration}
+      validates :goods_exonerate_total, presence: true, if: -> { document.version_43? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && has_exoneration}
+      validates :exonerate_total, presence: true, if: -> { document.version_43? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && has_exoneration}        
     
-      validates :total_iva_returned, presence: true, if: -> { FE.configuration.version_43? && medical_services_condition }
+      validates :total_iva_returned, presence: true, if: -> { document.version_43? && medical_services_condition }
       validate :totals_ok?
 
       def initialize(args={})
@@ -41,15 +41,16 @@ module FE
         @medical_services_condition if args[:medical_services_condition] || false
       end
 
-      def build_xml(node)
+      def build_xml(node, document)
+        @document = document
         raise FE::Error.new("summary invalid",class: self.class, messages: errors.messages) unless valid?
         node = Nokogiri::XML::Builder.new if node.nil?
 
         node.ResumenFactura do |xml|
-          if FE.configuration.version_42?
+          if document.version_42?
             xml.CodigoMoneda @currency if @currency.present?
             xml.TipoCambio @exchange_rate if @exchange_rate.present?
-          elsif FE.configuration.version_42? && @currency.present?
+          elsif document.version_42? && @currency.present?
             xml.TipoCodigoMoneda do |x|
               x.CodigoMoneda @currency
               x.TipoCambio @exchange_rate
@@ -58,18 +59,18 @@ module FE
           
           xml.TotalServGravados @services_taxable_total
           xml.TotalServExentos @services_exent_total
-          xml.TotalServExonerado @services_exonerate_total if @services_exonerate_total && FE.configuration.version_43?
+          xml.TotalServExonerado @services_exonerate_total if @services_exonerate_total && document.version_43?
           xml.TotalMercanciasGravadas @goods_taxable_total
           xml.TotalMercanciasExentas @goods_exent_total
-          xml.TotalMercExonerada @goods_exonerate_total if @goods_exonerate_total.present? && FE.configuration.version_43?
+          xml.TotalMercExonerada @goods_exonerate_total if @goods_exonerate_total.present? && document.version_43?
           xml.TotalGravado @taxable_total
           xml.TotalExento @exent_total
-          xml.TotalExonerado @exonerate_total if @exonerate_total.present? && FE.configuration.version_43?
+          xml.TotalExonerado @exonerate_total if @exonerate_total.present? && document.version_43?
           xml.TotalVenta @subtotal
           xml.TotalDescuentos @discount_total
           xml.TotalVentaNeta @gross_total
           xml.TotalImpuesto @tax_total
-          if FE.configuration.version_43?
+          if document.version_43?
             xml.TotalIVADevuelto @total_iva_returned
             xml.TotalOtrosCargos @total_others_charges
           end
@@ -82,7 +83,7 @@ module FE
       def totals_ok?
         errors.add :taxable_total, :invalid_amount, message: 'invalid amount' if (@taxable_total - (@services_taxable_total + @goods_taxable_total).round(5)).abs > 0.0005
         errors.add :exent_total, :invalid_amount, message: 'invalid amount' if (@exent_total - (@services_exent_total + @goods_exent_total).round(5)).abs > 0.0005
-        if FE.configuration.version_43?
+        if document.version_43?
           errors.add :exonerate_total, :invalid_amount, message: 'invalid amount' if (@exonerate_total - (@services_exonerate_total + @goods_exonerate_total).round(5)).abs > 0.0005
         end
         errors.add :subtotal, :invalid_amount, message: 'invalid amount' if (@subtotal - (@taxable_total + @exent_total).round(5)).abs > 0.0005

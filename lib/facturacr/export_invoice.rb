@@ -3,10 +3,11 @@ require 'facturacr/document'
 module FE
 
   class ExportInvoice < Document
-    validates :receiver, presence: true, if: -> { FE.configuration.version_43? }
+    validates :receiver, presence: true, if: -> { version.eql?("4.3") }
     
     DOCUMENT_TYPE = "09"
     def initialize(args={})
+      @version = args[:version]
       @economic_activity = args[:economic_activity]
       @date = args[:date]
       @issuer = args[:issuer]

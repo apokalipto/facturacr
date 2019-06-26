@@ -5,9 +5,10 @@ module FE
   class PurchaseInvoice < Document
     DOCUMENT_TYPE = "08"
     
-    validates :receiver, presence: true, if: -> { FE.configuration.version_43? }
+    validates :receiver, presence: true, if: -> { version.eql?("4.3") }
     
     def initialize(args={})
+      @version = args[:version]
       @economic_activity = args[:economic_activity]
       @date = args[:date]
       @issuer = args[:issuer]

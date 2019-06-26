@@ -18,6 +18,7 @@ module FE
     DOCUMENT_TYPE = "04"
     
     def initialize(args={})
+      @version = args[:version]
       @economic_activity = args[:economic_activity]
       @date = args[:date]
       @issuer = args[:issuer]
@@ -33,7 +34,7 @@ module FE
       @regulation = args[:regulation] ||= FE::Document::Regulation.new
       @security_code = args[:security_code]
       @document_situation = args[:document_situation]
-      @namespaces = NAMESPACES[FE.configuration.version] || NAMESPACES["4.2"]
+      @namespaces = NAMESPACES[@version]
       @others = args[:others] || []
     end
 
