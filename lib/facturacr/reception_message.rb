@@ -33,8 +33,9 @@ module FE
 
     attr_accessor :key, :date, :issuer_id_number, :receiver_id_number, :message, :details, :economic_activity,
     :tax_condition,:creditable_tax, :applicable_expense,:tax, :total, :number, :receiver_id_type, :security_code,
-    :document_situation, :issuer_id_type
+    :document_situation, :issuer_id_type, :original_version
 
+    validates :original_version, presence: true, if: -> { version_43? }
     validates :date, presence: true
     validates :issuer_id_number, presence: true, length: {is: 12}
     validates :receiver_id_number, presence: true, length: {is: 12}
@@ -52,6 +53,7 @@ module FE
 
     def initialize(args = {})
       @version = args[:version]
+      @original_version = args[:original_version]
       @key = args[:key]
       @date = args[:date]
       @issuer_id_type = args[:issuer_id_type]
@@ -101,10 +103,12 @@ module FE
         xml.FechaEmisionDoc @date.xmlschema
         xml.Mensaje @message
         xml.DetalleMensaje @details if @details
-        xml.CodigoActividad @economic_activity if version_43? && @economic_activity.present?
-        xml.CondicionImpuesto @tax_condition if version_43?
-        xml.MontoImpuestoAcreditar @creditable_tax.to_f if version_43? && @creditable_tax.present?
-        xml.MontoTotalDeGastoAplicable @applicable_expense.to_f if version_43? && @applicable_expense.present?
+        if version_43? && @original_version.eql?("4.3")
+          xml.CodigoActividad @economic_activity if @economic_activity.present?
+          xml.CondicionImpuesto @tax_condition
+          xml.MontoImpuestoAcreditar @creditable_tax.to_f if @creditable_tax.present?
+          xml.MontoTotalDeGastoAplicable @applicable_expense.to_f if @applicable_expense.present?
+        end
         xml.MontoTotalImpuesto @tax.to_f if @tax
         xml.TotalFactura @total
         xml.NumeroCedulaReceptor @receiver_id_number
