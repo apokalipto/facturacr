@@ -22,14 +22,22 @@ module FE
 
     XADES           = "http://uri.etsi.org/01903/v1.3.2#"
     XADES141        = "http://uri.etsi.org/01903/v1.4.1#"
-    SIGNATURE_POLICY = "https://tribunet.hacienda.go.cr/docs/esquemas/2016/v4/Resolucion%20Comprobantes%20Electronicos%20%20DGT-R-48-2016.pdf"
+    SIGNATURE_POLICY_42 = "https://tribunet.hacienda.go.cr/docs/esquemas/2016/v4/Resolucion%20Comprobantes%20Electronicos%20%20DGT-R-48-2016.pdf"
     
-    XMLNS_MAP = {
+    XMLNS_MAP_42 = {
       "FacturaElectronica" => "https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/facturaElectronica",
       "NotaCreditoElectronica" => "https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/notaCreditoElectronica",
       "TiqueteElectronico" => "https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/tiqueteElectronico",
       "NotaDebitoElectronica" => "https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/notaDebitoElectronica",
       "MensajeReceptor" => "https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/mensajeReceptor"
+    }
+    
+    XMLNS_MAP_43 = {
+      "FacturaElectronica" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/facturaElectronica",
+      "NotaCreditoElectronica" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/notaCreditoElectronica",
+      "TiqueteElectronico" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/tiqueteElectronico",
+      "NotaDebitoElectronica" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/notaDebitoElectronica",
+      "MensajeReceptor" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/mensajeReceptor"
     }   
     
     def initialize(args = {})
@@ -44,6 +52,9 @@ module FE
       @x509 = @p12.certificate
       @output_path = args[:output_path]
       @document_tag = @doc.elements.first.name
+      @version = @doc.elements.first.attr('xmlns').scan(/v4\..{1}/).first[1..-1]
+      @xmlns_map = XMLNS_MAP_42 if @version.eql?("4.2")
+      @xmlns_map = XMLNS_MAP_43 if @version.eql?("4.3")
     end
         
     def sign
@@ -96,7 +107,7 @@ module FE
     def build_key_info_element
       builder  = Nokogiri::XML::Builder.new
       attributes = {
-        "xmlns" => XMLNS_MAP[@document_tag],
+        "xmlns" => @xmlns_map[@document_tag],
         "xmlns:ds" => "http://www.w3.org/2000/09/xmldsig#",
         "xmlns:xsd" => "http://www.w3.org/2001/XMLSchema",
         "xmlns:xsi" => "http://www.w3.org/2001/XMLSchema-instance",
@@ -123,7 +134,7 @@ module FE
       signing_time = DateTime.now.rfc3339
       builder  = Nokogiri::XML::Builder.new
       attributes = {
-        "xmlns"=>XMLNS_MAP[@document_tag],
+        "xmlns"=>@xmlns_map[@document_tag],
         "xmlns:ds" => "http://www.w3.org/2000/09/xmldsig#",
         "xmlns:xades" => "http://uri.etsi.org/01903/v1.3.2#",
         "xmlns:xsd" => "http://www.w3.org/2001/XMLSchema",
@@ -149,7 +160,7 @@ module FE
           ssp.send("xades:SignaturePolicyIdentifier") do |spi|
             spi.send("xades:SignaturePolicyId") do |spi2|
               spi2.send("xades:SigPolicyId") do |spi3|
-                spi3.send("xades:Identifier", SIGNATURE_POLICY)
+                spi3.send("xades:Identifier", SIGNATURE_POLICY_42)
                 spi3.send("xades:Description")
               end
               
