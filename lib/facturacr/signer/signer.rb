@@ -187,7 +187,7 @@ module FE
       
       builder = builder  = Nokogiri::XML::Builder.new
       attributes = {
-        "xmlns"=>XMLNS_MAP[@document_tag],
+        "xmlns"=>@xmlns_map[@document_tag],
         "xmlns:ds" => "http://www.w3.org/2000/09/xmldsig#",
         "xmlns:xsd" => "http://www.w3.org/2001/XMLSchema",
         "xmlns:xsi" => "http://www.w3.org/2001/XMLSchema-instance"
