@@ -75,8 +75,8 @@ module FE
 
           if @comercial_code.present? && FE.configuration.version_43?
             x.CodigoComercial do |x2|
-              x2.TipoCodigo @comercial_code_type
-              x2.CodigoComercial @comercial_code
+              x2.Tipo @comercial_code_type
+              x2.Codigo @comercial_code
             end
           end
 
