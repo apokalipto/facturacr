@@ -50,7 +50,7 @@ module FE
     validates :receiver_id_type, presence: true
     validates :economic_activity, presence: true, if: ->{ version_43? && tax_condition != "05"}
     validates :creditable_tax, presence: true, if: -> { version_43? && tax_condition != "05" && (creditable_tax.present? && tax != creditable_tax) }
-    validates :applicable_expense, presence: true, if: -> { version_43? && tax_condition != "05" && (applicable_tax.present? && tax != creditable_tax) }
+    validates :applicable_expense, presence: true, if: -> { version_43? && tax_condition != "05" && (applicable_expense.present? && tax != creditable_tax) }
 
     def initialize(args = {})
       @version = args[:version]
