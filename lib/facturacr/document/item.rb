@@ -35,7 +35,8 @@ module FE
       validates :comercial_code_type, inclusion: CODE_TYPES.keys, if: -> { comercial_code.present? }
       validates :comercial_code, presence: true, length: {maximum: 20}
       validates :code, length: {maximum: 13} #TODO this will be mandatory after 2020-01-01
-
+      
+      validate :calculations_ok?
 
       def initialize(args = {})
         @document_type = args[:document_type]
@@ -112,6 +113,12 @@ module FE
           x.MontoTotalLinea @net_total
         end
 
+      end
+      
+      
+      
+      def calculation_ok?
+        errors.add :total, :invalid_amount, message: 'invalid amount' if (@total - (@quantity * @unit_price)).round(5)).abs > 0.0005
       end
 
 
