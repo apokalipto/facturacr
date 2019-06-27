@@ -98,8 +98,7 @@ module FE
             x.Descuento do |x2|
               x2.TipoDescuento @discount_reason
               x2.Descuento @discount
-          end
-
+            end
           end
 
           x.SubTotal @subtotal
@@ -117,7 +116,7 @@ module FE
       
       
       
-      def calculation_ok?
+      def calculations_ok?
         errors.add :total, :invalid_amount, message: 'invalid amount' if (@total - (@quantity * @unit_price).round(5)).abs > 0.0005
       end
 
