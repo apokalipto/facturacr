@@ -93,11 +93,15 @@ module FE
           x.Detalle @description
           x.PrecioUnitario @unit_price
           x.MontoTotal @total
-
-          if @discount.present?
+          
+          if document.version_42?
+            x.MontoDescuento @discount if @discount.present?
+            x.NaturalezaDescuento @discount_reason if @discount_reason.present?
+          end
+          if @discount.present? && document.version_43?
             x.Descuento do |x2|
-              x2.TipoDescuento @discount_reason
-              x2.Descuento @discount
+              x2.MontoDescuento @discount
+              x2.NaturalezDescuento @discount_reason
             end
           end
 

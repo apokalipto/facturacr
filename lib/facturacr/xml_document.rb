@@ -5,7 +5,7 @@ require 'facturacr/document'
 module FE  
   class XmlDocument
     
-    attr_accessor :document, :root_tag
+    attr_accessor :document, :root_tag, :doc, :xml
     
     def initialize(xml_provider)
       # Backwards compatibility with v0.1.4
@@ -14,8 +14,8 @@ module FE
         xml_provider = FE::DataProvider.new(:file, xml_provider)
       end
       raise ArgumentError, "Invalid Argument" unless xml_provider.is_a?(FE::DataProvider)
-    
-      @doc = Nokogiri::XML(xml_provider.contents) do |config|
+      @xml = xml_provider.contents
+      @doc = Nokogiri::XML(@xml) do |config|
         config.options = Nokogiri::XML::ParseOptions::NOBLANKS | Nokogiri::XML::ParseOptions::NOENT
       end
       root_tag = @doc.elements.first.name
@@ -33,8 +33,11 @@ module FE
       end
       
       if @document.is_a?(FE::Document)
-        
+        @document.version = @doc.elements.first.namespace.href.scan(/v4\..{1}/).first[1..-1]
         @document.date = DateTime.parse(@doc.css("#{root_tag} FechaEmision").first&.text)
+        if @document.version_43?
+          @document.economic_activity = @doc.css("#{root_tag} ActividadEconomica").text
+        end
         @key = @doc.css("#{root_tag} Clave").text
         @document.key = @key if @key.present?
         @document.headquarters = @key[21..23]
