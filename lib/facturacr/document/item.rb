@@ -101,7 +101,7 @@ module FE
           if @discount.present? && document.version_43?
             x.Descuento do |x2|
               x2.MontoDescuento @discount
-              x2.NaturalezDescuento @discount_reason
+              x2.NaturalezaDescuento @discount_reason
             end
           end
 
