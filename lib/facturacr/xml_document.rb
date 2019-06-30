@@ -36,7 +36,7 @@ module FE
         @document.version = @doc.elements.first.namespace.href.scan(/v4\..{1}/).first[1..-1]
         @document.date = DateTime.parse(@doc.css("#{root_tag} FechaEmision").first&.text)
         if @document.version_43?
-          @document.economic_activity = @doc.css("#{root_tag} ActividadEconomica").text
+          @document.economic_activity = @doc.css("#{root_tag} CodigoActividad").text
         end
         @key = @doc.css("#{root_tag} Clave").text
         @document.key = @key if @key.present?
