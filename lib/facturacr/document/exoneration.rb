@@ -29,8 +29,7 @@ module FE
         @institution = args[:institution]
         @date = args[:date]
         @total_tax = args[:total_tax]
-        @percentage = ((@total_tax.to_f / args[:net_total].to_f) * 100).to_i if args[:net_total].present?
-
+        @percentage = args[:percentage]
       end
 
       def build_xml(node, document)
