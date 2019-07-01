@@ -43,8 +43,8 @@ module FE
           xml.NumeroDocumento @document_number
           xml.NombreInstitucion @institution
           xml.FechaEmision @date.xmlschema
-          xml.MontoExoneracion @total_tax
           xml.PorcentajeExoneracio @percentage
+          xml.MontoExoneracion @total_tax
         end
       end
 
