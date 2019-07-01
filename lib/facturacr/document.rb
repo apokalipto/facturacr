@@ -58,7 +58,7 @@ module FE
     validates :document_type, presence: true, inclusion: DOCUMENT_TYPES.keys
     validates :document_situation, presence: true, inclusion: DOCUMENT_SITUATION.keys
     validates :summary, presence: true
-    validates :regulation, presence: true, if: ->{ version.eql?("4.3") }
+    validates :regulation, presence: true, if: ->{ version.eql?("4.2") }
     validates :security_code, presence: true, length: {is: 8}
     validates :references, presence: true, if: -> {document_type.eql?("02") || document_type.eql?("03")}
     validates :items, presence:true
