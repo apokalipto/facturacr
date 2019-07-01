@@ -57,7 +57,8 @@ module FE
         return true 
       end
     rescue => e
-      @errors[:request] = {message: e.message, response: e.response}
+      @errors[:request] = {message: e.message}
+      @errors[:response] = e.response if e.respond_to?(e.response) 
       return false      
     end
     
