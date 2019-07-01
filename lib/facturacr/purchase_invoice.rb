@@ -26,7 +26,7 @@ module FE
       @namespaces = {
         "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
         "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
-        "xmlns"=>"https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/facturaElectronicaExportacion"#,
+        "xmlns"=>"https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/facturaElectronicaCompra"#,
       }
       @others = args[:others] || []
     end

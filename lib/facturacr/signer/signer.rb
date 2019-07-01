@@ -37,7 +37,9 @@ module FE
       "NotaCreditoElectronica" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/notaCreditoElectronica",
       "TiqueteElectronico" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/tiqueteElectronico",
       "NotaDebitoElectronica" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/notaDebitoElectronica",
-      "MensajeReceptor" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/mensajeReceptor"
+      "MensajeReceptor" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/mensajeReceptor",
+      "FacturaElectronicaCompra" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/facturaElectronicaCompra",
+      "FacturaElectronicaExportacion" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/facturaElectronicaExportacion"
     }   
     
     def initialize(args = {})
