@@ -43,6 +43,7 @@ module FE
 
       def build_xml(node, document)
         @document = document
+        @document_type = document.document_type
         raise FE::Error.new("summary invalid",class: self.class, messages: errors.messages) unless valid?
         node = Nokogiri::XML::Builder.new if node.nil?
 
