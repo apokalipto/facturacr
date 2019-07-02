@@ -52,7 +52,7 @@ module FE
             xml.CodigoMoneda @currency if @currency.present?
             xml.TipoCambio @exchange_rate if @exchange_rate.present?
           elsif document.version_43? && @currency.present?
-            xml.TipoCodigoMoneda do |x|
+            xml.CodigoTipoMoneda do |x|
               x.CodigoMoneda @currency
               x.TipoCambio @exchange_rate
             end
