@@ -122,7 +122,7 @@ module FE
       
       
       def calculations_ok?
-        errors.add :total, :invalid_amount, message: 'invalid amount' if (@total - (@quantity * @unit_price).round(5)).abs > 0.005
+        errors.add :total, :invalid_amount, message: 'invalid amount' if (@total - (@quantity * @unit_price).round(5)).abs > 1
       end
 
 
