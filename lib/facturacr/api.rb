@@ -58,7 +58,7 @@ module FE
       end
     rescue => e
       @errors[:request] = {message: e.message}
-      @errors[:response] = e.response if e.respond_to?(e.response) 
+      @errors[:response] = e.response if e.respond_to?(:response) 
       return false      
     end
     
