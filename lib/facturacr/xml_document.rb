@@ -100,7 +100,11 @@ module FE
         @doc.css("#{root_tag} DetalleServicio LineaDetalle").each do |line|
           item = FE::Document::Item.new
           item.line_number = line.css("NumeroLinea").text.to_i
-          item.code = line.css("Codigo Codigo").text
+          if @document.version_42?
+            item.code = line.css("Codigo Codigo").text
+          elsif @document.version_43?
+            item.code = line.css("CodigoComercial Codigo").text
+          end
           item.quantity = line.css("Cantidad").text
           item.unit = line.css("UnidadMedida").text
           item.description = line.css("Detalle").text
@@ -133,8 +137,13 @@ module FE
       
         @summary = FE::Document::Summary.new
         sum = @doc.css("#{root_tag} ResumenFactura")
-        @summary.currency = sum.css("CodigoMoneda").text
-        @summary.exchange_rate = sum.css("TipoCambio").text.to_f
+        if @document.version_42?
+          @summary.currency = sum.css("CodigoMoneda").text
+          @summary.exchange_rate = sum.css("TipoCambio").text.to_f
+        elsif @document.version_43?
+          @summary.currency = sum.css("CodigoTipoMoneda CodigoMoneda").text
+          @summary.exchange_rate = sum.css("CodigoTipoMoneda TipoCambio").text.to_f
+        end
         @summary.services_taxable_total = sum.css("TotalServGravados").text.to_f
         @summary.services_exent_total = sum.css("TotalServExentos").text.to_f
         @summary.goods_taxable_total = sum.css("TotalMercanciasGravadas").text.to_f
