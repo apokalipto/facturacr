@@ -15,7 +15,7 @@ module FE
         "xmlns"=>"https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/facturaElectronica"#,
       }}
     validates :receiver, presence: true, if: -> { version.eql?("4.3") }
-    
+
     DOCUMENT_TYPE = "01"
     def initialize(args={})
       @version = args[:version]
@@ -36,6 +36,7 @@ module FE
       @other_charges = args[:other_charges]
       @namespaces = NAMESPACES[@version]
       @others = args[:others] || []
+      @references = args[:references] || []
     end
 
     def document_tag
