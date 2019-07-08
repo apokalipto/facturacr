@@ -20,7 +20,7 @@ module FE
 
       validates :document_type, presence: true, inclusion: FE::Document::DOCUMENT_TYPES.keys
       validates :line_number, presence: true
-      validates :tariff_item, presence: true, if:->{document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && SERVICE_UNITS.include?(unit) && document.version_43? }
+      validates :tariff_item, presence: true, if:->{document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && !SERVICE_UNITS.include?(unit) && document.version_43? }
       validates :quantity, presence: true, numericality: { greater_than: 0 }
       validates :unit, presence: true, inclusion: UNITS
       validates :description, presence: true, length: { maximum: 200 }
