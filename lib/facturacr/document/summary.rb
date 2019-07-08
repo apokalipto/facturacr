@@ -72,7 +72,7 @@ module FE
           xml.TotalVentaNeta @gross_total
           xml.TotalImpuesto @tax_total
           if document.version_43?
-            xml.TotalIVADevuelto @total_iva_returned
+            xml.TotalIVADevuelto @total_iva_returned if !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE)
             xml.TotalOtrosCargos @total_others_charges
           end
           xml.TotalComprobante @net_total
