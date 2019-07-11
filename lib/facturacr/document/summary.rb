@@ -5,16 +5,16 @@ module FE
 
       attr_accessor :currency, :exchange_rate, :services_taxable_total, :services_exent_total, :services_exonerate_total,
                     :goods_taxable_total,:goods_exent_total,:goods_exonerate_total, :taxable_total, :exent_total,:exonerate_total,
-                    :subtotal, :discount_total, :gross_total, :tax_total,:total_iva_returned,:total_others_charges, :net_total,  
+                    :subtotal, :discount_total, :gross_total, :tax_total,:total_iva_returned,:total_others_charges, :net_total,
                     :with_credit_card, :document_type, :has_exoneration, :medical_services_condition
-      
+
       validates :currency, presence: true
       validates :exchange_rate, presence: true, if: -> { currency.present? && currency != "CRC" }
-      
+
       validates :services_exonerate_total, presence: true, if: -> { document.version_43? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && has_exoneration}
       validates :goods_exonerate_total, presence: true, if: -> { document.version_43? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && has_exoneration}
-      validates :exonerate_total, presence: true, if: -> { document.version_43? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && has_exoneration}        
-    
+      validates :exonerate_total, presence: true, if: -> { document.version_43? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && has_exoneration}
+
       validates :total_iva_returned, presence: true, if: -> { document.version_43? && medical_services_condition }
       validate :totals_ok?
 
@@ -57,7 +57,7 @@ module FE
               x.TipoCambio @exchange_rate
             end
           end
-          
+
           xml.TotalServGravados @services_taxable_total
           xml.TotalServExentos @services_exent_total
           xml.TotalServExonerado @services_exonerate_total if @services_exonerate_total && document.version_43? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE)
@@ -72,7 +72,7 @@ module FE
           xml.TotalVentaNeta @gross_total
           xml.TotalImpuesto @tax_total
           if document.version_43?
-            xml.TotalIVADevuelto @total_iva_returned if !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE)
+            xml.TotalIVADevuelto @total_iva_returned if !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) || !document_type.eql?(FE::PurchaseInvoice::DOCUMENT_TYPE)
             xml.TotalOtrosCargos @total_others_charges
           end
           xml.TotalComprobante @net_total
