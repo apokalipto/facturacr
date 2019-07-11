@@ -6,7 +6,7 @@ module FE
       UNITS = %w[ Al Alc Cm I Os Spe St Sp m kg s A K mol cd m² m³ m/s m/s² 1/m kg/m³ A/m² A/m mol/m³ cd/m² 1 rad sr Hz N Pa J W C V F Ω S Wb T H °C lm
                  lx Bq Gy Sv kat Pa·s N·m N/m rad/s rad/s² W/m² J/K J/(kg·K) J/kg W/(m·K) J/m³ V/m C/m³ C/m² F/m H/m J/mol J/(mol·K)
                  C/kg Gy/s W/sr W/(m²·sr) kat/m³ min h d º ´ ´´ L t Np B eV u ua Unid Gal g Km ln cm mL mm Oz Otros].freeze
-
+      SERVICE_UNITS = %w[Al Alc Os Spe Sp St]
       CODE_TYPES = {
         '01' => 'Código del producto del vendedor',
         '02' => 'Código del producto del comprador',
@@ -20,7 +20,7 @@ module FE
 
       validates :document_type, presence: true, inclusion: FE::Document::DOCUMENT_TYPES.keys
       validates :line_number, presence: true
-      validates :tariff_item, presence: true, if:->{document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && (document.version_43?)}
+      validates :tariff_item, presence: true, if:->{document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && !SERVICE_UNITS.include?(unit) && document.version_43? }
       validates :quantity, presence: true, numericality: { greater_than: 0 }
       validates :unit, presence: true, inclusion: UNITS
       validates :description, presence: true, length: { maximum: 200 }

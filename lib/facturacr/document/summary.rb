@@ -60,19 +60,19 @@ module FE
           
           xml.TotalServGravados @services_taxable_total
           xml.TotalServExentos @services_exent_total
-          xml.TotalServExonerado @services_exonerate_total if @services_exonerate_total && document.version_43?
+          xml.TotalServExonerado @services_exonerate_total if @services_exonerate_total && document.version_43? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE)
           xml.TotalMercanciasGravadas @goods_taxable_total
           xml.TotalMercanciasExentas @goods_exent_total
-          xml.TotalMercExonerada @goods_exonerate_total if @goods_exonerate_total.present? && document.version_43?
+          xml.TotalMercExonerada @goods_exonerate_total if @goods_exonerate_total.present? && document.version_43? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE)
           xml.TotalGravado @taxable_total
           xml.TotalExento @exent_total
-          xml.TotalExonerado @exonerate_total if @exonerate_total.present? && document.version_43?
+          xml.TotalExonerado @exonerate_total if @exonerate_total.present? && document.version_43? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE)
           xml.TotalVenta @subtotal
           xml.TotalDescuentos @discount_total
           xml.TotalVentaNeta @gross_total
           xml.TotalImpuesto @tax_total
           if document.version_43?
-            xml.TotalIVADevuelto @total_iva_returned
+            xml.TotalIVADevuelto @total_iva_returned if !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE)
             xml.TotalOtrosCargos @total_others_charges
           end
           xml.TotalComprobante @net_total
