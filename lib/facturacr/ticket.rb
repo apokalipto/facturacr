@@ -16,7 +16,7 @@ module FE
       }
     }
     DOCUMENT_TYPE = "04"
-    
+
     def initialize(args={})
       @version = args[:version]
       @economic_activity = args[:economic_activity]
@@ -36,6 +36,7 @@ module FE
       @document_situation = args[:document_situation]
       @namespaces = NAMESPACES[@version]
       @others = args[:others] || []
+      @references = args[:references] || []
     end
 
     def document_tag
