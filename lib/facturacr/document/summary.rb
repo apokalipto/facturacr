@@ -38,7 +38,7 @@ module FE
         @total_others_charges =args[:total_others_charges].to_f
         @net_total = args[:net_total].to_f
         @has_exoneration = args[:has_exoneration] || false
-        @medical_services_condition if args[:medical_services_condition] || false
+        @medical_services_condition = args[:medical_services_condition] || false
       end
 
       def build_xml(node, document)
@@ -72,7 +72,7 @@ module FE
           xml.TotalVentaNeta @gross_total
           xml.TotalImpuesto @tax_total
           if document.version_43?
-            xml.TotalIVADevuelto @total_iva_returned if !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && !document_type.eql?(FE::PurchaseInvoice::DOCUMENT_TYPE)
+            xml.TotalIVADevuelto @total_iva_returned if @medical_services_condition && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && !document_type.eql?(FE::PurchaseInvoice::DOCUMENT_TYPE)
             xml.TotalOtrosCargos @total_others_charges
           end
           xml.TotalComprobante @net_total
@@ -89,7 +89,7 @@ module FE
         end
         errors.add :subtotal, :invalid_amount, message: 'invalid amount' if (@subtotal - (@taxable_total + @exent_total + @exonerate_total).round(5)).abs > 0.0005
         errors.add :gross_total, :invalid_amount, message: 'invalid amount' if (@gross_total - (@subtotal - @discount_total).round(5)).abs > 0.0005
-        errors.add :net_total, :invalid_amount, message: "invalid amount" if (@net_total - (@gross_total + @tax_total + @total_others_charges).round(5)).abs > 0.0005
+        errors.add :net_total, :invalid_amount, message: "invalid amount" if (@net_total - (@gross_total + @tax_total + @total_others_charges - @total_iva_returned).round(5)).abs > 0.0005
       end
     end
   end
