@@ -1,30 +1,6 @@
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'facturacr'
 
-require 'facturacr/document'
-require 'facturacr/document/fax'
-require 'facturacr/document/identification_document'
-require 'facturacr/document/issuer'
-require 'facturacr/document/receiver'
-require 'facturacr/document/location'
-require 'facturacr/document/phone_type'
-require 'facturacr/document/phone'
-require 'facturacr/document/item'
-require 'facturacr/document/tax'
-require 'facturacr/document/summary'
-require 'facturacr/document/regulation'
-require 'facturacr/document/reference'
-require 'facturacr/document/other_charges'
-
-require 'facturacr/invoice'
-require 'facturacr/export_invoice'
-require 'facturacr/purchase_invoice'
-require 'facturacr/credit_note'
-require 'facturacr/data_provider'
-require 'facturacr/signer/signer'
-require 'facturacr/api'
-require 'facturacr/signed_document'
-
 require 'minitest/autorun'
 require 'yaml'
 require 'active_support/core_ext/hash/indifferent_access'
@@ -55,11 +31,11 @@ class Minitest::Test
   end
 
   def build_invoice(number,date,issuer,receiver,items,summary,condition="01",credit_term=nil)
-    FE::Invoice.new date: date, issuer: issuer, receiver: receiver, number: number, items: items, condition: condition, credit_term: credit_term, summary: summary, security_code: "99999999", document_situation: "1"
+    FE::Invoice.new date: date, issuer: issuer, receiver: receiver, number: number, items: items, condition: condition, credit_term: credit_term, summary: summary, security_code: "99999999", document_situation: "1", version: "4.3", economic_activity: "721001"
   end
 
   def read_static_data
-    if File.exists?("tmp/data.yml")
+    if File.exist?("tmp/data.yml")
       data = YAML.load_file("tmp/data.yml")
       return data.with_indifferent_access
     else
@@ -80,7 +56,8 @@ class Minitest::Test
     credit_note.summary = invoice.summary
     credit_note.references = [FE::Document::Reference.new(document_type: invoice.document_type, number: invoice.key, date: invoice.date, code: "01", reason: "Anula documento")]
     credit_note.credit_term = "15"
-
+    credit_note.version = invoice.version
+    credit_note.economic_activity = invoice.economic_activity
     credit_note
   end
 

@@ -1,4 +1,3 @@
-require "facturacr/document"
 require 'active_model'
 require 'nokogiri'
 

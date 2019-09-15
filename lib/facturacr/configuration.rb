@@ -29,7 +29,7 @@ module FE
     end
 
     def read_config_file
-      if file? && @file_path && File.exists?(@file_path)
+      if file? && @file_path && File.exist?(@file_path)
         template = ERB.new(File.read(@file_path))
         result = YAML.load(template.result(binding))
         result[@environment].each do |k,v|

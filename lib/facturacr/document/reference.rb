@@ -1,5 +1,3 @@
-require 'facturacr/document'
-
 module FE
   class Document
     class Reference < Element

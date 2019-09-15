@@ -42,7 +42,7 @@ module FE
       else
         url += "/logout"
       end
-      response = RestClient.post url, logout_data
+      RestClient.post url, logout_data
     rescue => e
       puts "LOGOUT ERROR: #{e.message}".red
     end

@@ -132,7 +132,6 @@ module FE
     
     def build_signed_properties_element
       cert_digest = compute_digest(@x509.to_der,algorithm(SHA256))
-      policy_digest = compute_digest(@x509.to_der,algorithm(SHA256))
       signing_time = DateTime.now.rfc3339
       builder  = Nokogiri::XML::Builder.new
       attributes = {
@@ -153,7 +152,7 @@ module FE
                 xcd.send("ds:DigestValue", cert_digest)
               end
               c.send("xades:IssuerSerial") do |is|
-                is.send("ds:X509IssuerName", @x509.issuer.to_a.reverse.map{|c| c[0..1].join("=")}.join(", "))
+                is.send("ds:X509IssuerName", @x509.issuer.to_a.reverse.map{|x| x[0..1].join("=")}.join(", "))
                 is.send("ds:X509SerialNumber", @x509.serial.to_s)
               end
             end

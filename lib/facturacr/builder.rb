@@ -134,7 +134,7 @@ module FE
       else
         summary = args[:summary]
       end
-      FE::Invoice.new date: args[:date], issuer: issuer, receiver: receiver, number: args[:number], items: items, condition: args[:condition], credit_term: args[:credit_term], summary: summary, security_code: args[:security_code], document_situation: args[:document_situation]
+      FE::Invoice.new date: args[:date], issuer: issuer, receiver: receiver, number: args[:number], items: items, condition: args[:condition], credit_term: args[:credit_term], summary: summary, security_code: args[:security_code], document_situation: args[:document_situation], version: args[:version], economic_activity: args[:economic_activity]
     end
     
     def ticket(args = {})
@@ -165,7 +165,7 @@ module FE
       else
         summary = args[:summary]
       end
-      FE::Ticket.new date: args[:date], issuer: issuer, receiver: receiver, number: args[:number], items: items, condition: args[:condition], credit_term: args[:credit_term], summary: summary, security_code: args[:security_code], document_situation: args[:document_situation]
+      FE::Ticket.new date: args[:date], issuer: issuer, receiver: receiver, number: args[:number], items: items, condition: args[:condition], credit_term: args[:credit_term], summary: summary, security_code: args[:security_code], document_situation: args[:document_situation], version: args[:version], economic_activity: args[:economic_activity]
     end
     
     
@@ -207,7 +207,7 @@ module FE
         references = args[:references]
       end
       
-      FE::CreditNote.new date: args[:date], issuer: issuer, receiver: receiver, number: args[:number], items: items, condition: args[:condition], credit_term: args[:credit_term], summary: summary, security_code: args[:security_code], document_situation: args[:document_situation], references: references
+      FE::CreditNote.new date: args[:date], issuer: issuer, receiver: receiver, number: args[:number], items: items, condition: args[:condition], credit_term: args[:credit_term], summary: summary, security_code: args[:security_code], document_situation: args[:document_situation], references: references, version: args[:version], economic_activity: args[:economic_activity]
     end
     
     def debit_note(args = {})
@@ -248,7 +248,7 @@ module FE
         references = args[:references]
       end
       
-      FE::DebitNote.new date: args[:date], issuer: issuer, receiver: receiver, number: args[:number], items: items, condition: args[:condition], credit_term: args[:credit_term], summary: summary, security_code: args[:security_code], document_situation: args[:document_situation], references: references
+      FE::DebitNote.new date: args[:date], issuer: issuer, receiver: receiver, number: args[:number], items: items, condition: args[:condition], credit_term: args[:credit_term], summary: summary, security_code: args[:security_code], document_situation: args[:document_situation], references: references, version: args[:version], economic_activity: args[:economic_activity]
     end
     
     def reception_message(args={})

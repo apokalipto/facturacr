@@ -41,11 +41,12 @@ module FE
       "3" => "Sin Internet"
     }.freeze
 
+    attr_writer :headquarters, :terminal, :key
     attr_accessor :serial, :date, :issuer, :receiver, :condition, :credit_term,
                   :payment_type, :service_type, :reference_information,
                   :regulation, :number, :document_type, :security_code,
                   :items, :references, :namespaces, :summary, :document_situation,
-                  :headquarters, :terminal, :others, :key, :economic_activity, :other_charges, :version
+                  :others, :economic_activity, :other_charges, :version
     
     validates :version, presence: true
     validates :economic_activity, presence: true, if: ->{ version.eql?("4.3") }
@@ -198,25 +199,23 @@ module FE
     end
 
   end
-
-
-
 end
 
-require 'facturacr/document/code'
-require 'facturacr/document/exoneration'
-require 'facturacr/document/fax'
-require 'facturacr/document/identification_document'
-require 'facturacr/document/issuer'
-require 'facturacr/document/item'
-require 'facturacr/document/location'
-require 'facturacr/document/phone_type'
-require 'facturacr/document/phone'
-require 'facturacr/document/receiver'
-require 'facturacr/document/reference'
-require 'facturacr/document/regulation'
-require 'facturacr/document/summary'
-require 'facturacr/document/tax'
-require 'facturacr/document/other_text'
-require 'facturacr/document/other_content'
-require 'facturacr/document/other_charges'
+require_relative 'document/code'
+require_relative 'document/exoneration'
+require_relative 'document/fax'
+require_relative 'document/identification_document'
+require_relative 'document/issuer'
+require_relative 'document/item'
+require_relative 'document/location'
+require_relative 'document/phone_type'
+require_relative 'document/phone'
+require_relative 'document/fax'
+require_relative 'document/receiver'
+require_relative 'document/reference'
+require_relative 'document/regulation'
+require_relative 'document/summary'
+require_relative 'document/tax'
+require_relative 'document/other_text'
+require_relative 'document/other_content'
+require_relative 'document/other_charges'

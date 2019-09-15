@@ -9,7 +9,7 @@ class SignerTest < Minitest::Test
     
     signer = FE::Signer.new({xml_provider: data_provider, key_provider: key_provider, pin: 'test', output_path: 'tmp/ruby_signer_out.xml'})
     signer.sign
-    stdout, stderr, status = Open3.capture3("xmlsec1 --verify tmp/ruby_signer_out.xml")
+    stderr = Open3.capture3("xmlsec1 --verify tmp/ruby_signer_out.xml")[1]
     puts
     puts "xmlsec1 --verify tmp/ruby_signer_out.xml"
     puts stderr
@@ -21,7 +21,7 @@ class SignerTest < Minitest::Test
   def test_java_signer_produces_valid_signature
     signer = FE::JavaSigner.new('resources/test.p12','test','resources/invoice.xml','tmp/java_signer_out.xml')
     signer.sign
-    stdout, stderr, status = Open3.capture3("xmlsec1 --verify tmp/java_signer_out.xml")
+    stderr = Open3.capture3("xmlsec1 --verify tmp/java_signer_out.xml")[1]
     puts
     puts "xmlsec1 --verify tmp/java_signer_out.xml"
     puts stderr
@@ -38,7 +38,7 @@ class SignerTest < Minitest::Test
     signer = FE::Signer.new({xml_provider: data_provider, key_provider: key_provider, pin: 'test', output_path: 'tmp/memory_signer_out.xml'})
     
     signer.sign
-    stdout, stderr, status = Open3.capture3("xmlsec1 --verify tmp/memory_signer_out.xml")
+    stderr = Open3.capture3("xmlsec1 --verify tmp/memory_signer_out.xml")[1]
     puts
     puts "xmlsec1 --verify tmp/memory_signer_out.xml"
     puts stderr
@@ -61,7 +61,7 @@ class SignerTest < Minitest::Test
     signer = FE::Signer.new({xml_provider: data_provider, key_provider: key_provider, pin: 'test', output_path: 'tmp/generated_memory_signer_out.xml'})
     
     signer.sign
-    stdout, stderr, status = Open3.capture3("xmlsec1 --verify tmp/generated_memory_signer_out.xml")
+    stderr = Open3.capture3("xmlsec1 --verify tmp/generated_memory_signer_out.xml")[1]
     puts
     puts "xmlsec1 --verify tmp/generated_memory_signer_out.xml"
     puts stderr
