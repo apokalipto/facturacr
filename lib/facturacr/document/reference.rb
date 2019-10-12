@@ -55,10 +55,10 @@ module FE
         node = Nokogiri::XML::Builder.new if node.nil?
         node.InformacionReferencia do |xml|
           xml.TipoDoc @document_type
-          xml.Numero @number
+          xml.Numero @number if @number.present?
           xml.FechaEmision @date.xmlschema
-          xml.Codigo @code
-          xml.Razon @reason
+          xml.Codigo @code if @code.present?
+          xml.Razon @reason if @reason.present?
         end
       end
     end
