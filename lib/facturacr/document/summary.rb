@@ -73,7 +73,7 @@ module FE
           xml.TotalImpuesto @tax_total
           if document.version_43?
             xml.TotalIVADevuelto @total_iva_returned if @medical_services_condition && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && !document_type.eql?(FE::PurchaseInvoice::DOCUMENT_TYPE)
-            xml.TotalOtrosCargos @total_other_charges if @total_others > 0
+            xml.TotalOtrosCargos @total_other_charges if @total_other_charges > 0
           end
           xml.TotalComprobante @net_total
         end
