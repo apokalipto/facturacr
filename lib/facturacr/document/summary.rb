@@ -51,10 +51,10 @@ module FE
           if document.version_42?
             xml.CodigoMoneda @currency if @currency.present?
             xml.TipoCambio @exchange_rate if @exchange_rate.present?
-          elsif document.version_43? && @currency.present? && @currency != "CRC"
+          elsif document.version_43? && @currency.present? #&& @currency != "CRC"
             xml.CodigoTipoMoneda do |x|
               x.CodigoMoneda @currency
-              x.TipoCambio @exchange_rate
+              x.TipoCambio @exchange_rate || 1
             end
           end
 
