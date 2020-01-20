@@ -46,7 +46,7 @@ module FE
                   :regulation, :number, :document_type, :security_code,
                   :items, :references, :namespaces, :summary, :document_situation,
                   :headquarters, :terminal, :others, :key, :economic_activity, :other_charges, :version
-    
+
     validates :version, presence: true
     validates :economic_activity, presence: true, if: ->{ version.eql?("4.3") }
     validates :date, presence: true
@@ -63,7 +63,8 @@ module FE
     validates :references, presence: true, if: -> {document_type.eql?("02") || document_type.eql?("03")}
     validates :items, presence:true
     validate :payment_types_ok?
-    
+    validate :other_charges_ok?, if: -> {@other_charges.present?}
+
     def initialize
       raise FE::Error "Subclasses must implement this method"
     end
@@ -103,11 +104,11 @@ module FE
       cons = ("%010d" % @number)
       "#{headquarters}#{terminal}#{@document_type}#{cons}"
     end
-    
+
     def version_42?
       @version.eql?("4.2")
     end
-    
+
     def version_43?
       @version.eql?("4.3")
     end
@@ -138,8 +139,13 @@ module FE
           end
         end
 
+        if other_charges.present?
+          @other_charges.each do |other_charge|
+            other_charge.build_xml(xml, self)
+          end
+        end
 
-        other_charges.build_xml(xml,self) if other_charges.present? && version_43? # see this
+        #other_charges.build_xml(xml,self) if other_charges.present? && version_43? # see this
 
         summary.build_xml(xml, self)
 
@@ -186,6 +192,14 @@ module FE
     end
 
     private
+
+    def other_charges_ok?
+      if @other_charges.is_a?(Array)
+        errors.add :other_charges, "invalid other_charges: not included" unless @other_charges.all? {|i| FE::Document::OtherCharges::OTHER_DOCUMENT_TYPES.include?(i.document_type)}
+      else
+        errors.add :other_charges, "invalid other_charges: not array"
+      end
+    end
 
     def payment_types_ok?
       errors.add :payment_type, "missing payment type" if @payment_type.nil?
