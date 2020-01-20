@@ -195,6 +195,7 @@ module FE
 
     def other_charges_ok?
       if @other_charges.is_a?(Array)
+        errors.add :other_charges, "invalid other_charges: the length can't be greater than 15" if @other_charges.length > 15
         errors.add :other_charges, "invalid other_charges: not included" unless @other_charges.all? {|i| FE::Document::OtherCharges::OTHER_DOCUMENT_TYPES.include?(i.document_type)}
       else
         errors.add :other_charges, "invalid other_charges: not array"
