@@ -36,10 +36,11 @@ module FE
       
 
       validates :document_type, presence: true, inclusion: DOCUMENT_TYPES.keys
-      validates :number, presence: true, length: {maximum: 50}, if: ->{ document_type.present? }
       validates :date, presence: true
-      validates :code, presence: true, length: {is: 2}, inclusion: REFERENCE_CODES.keys, if: ->{ document_type.present? }
-      validates :reason, presence: true, length: {maximum: 180}, if: ->{ document_type.present? }
+
+      validates :number, presence: true, length: {maximum: 50}, if: ->{ document_type.present? && document_type != "13"}
+      validates :code, presence: true, length: {is: 2}, inclusion: REFERENCE_CODES.keys, if: ->{ document_type.present? && document_type != "13" }
+      validates :reason, presence: true, length: {maximum: 180}, if: ->{ document_type.present? && document_type != "13" }
 
       def initialize(args={})
         @document_type = args[:document_type]
@@ -54,10 +55,10 @@ module FE
         node = Nokogiri::XML::Builder.new if node.nil?
         node.InformacionReferencia do |xml|
           xml.TipoDoc @document_type
-          xml.Numero @number
+          xml.Numero @number if @number.present?
           xml.FechaEmision @date.xmlschema
-          xml.Codigo @code
-          xml.Razon @reason
+          xml.Codigo @code if @code.present?
+          xml.Razon @reason if @reason.present?
         end
       end
     end
