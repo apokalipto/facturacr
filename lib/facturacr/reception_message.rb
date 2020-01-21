@@ -34,14 +34,14 @@ module FE
     attr_accessor :key, :date, :issuer_id_number, :receiver_id_number, :message, :details, :economic_activity,
     :tax_condition,:creditable_tax, :applicable_expense,:tax, :total, :number, :receiver_id_type, :security_code,
     :document_situation, :issuer_id_type, :original_version, :version
-    
+
     validates :version, presence: true
     validates :original_version, presence: true, if: -> { version_43? }
     validates :date, presence: true
     validates :issuer_id_number, presence: true, length: {is: 12}
     validates :receiver_id_number, presence: true, length: {is: 12}
     validates :message, presence: true, inclusion: MESSAGE_TYPES.keys
-    validates :tax_condition, inclusion: TAX_CONDITION.keys, presence:true, if: ->{ version_43? && original_version.eql?("4.3")}
+    validates :tax_condition, inclusion: TAX_CONDITION.keys, presence:true, if: ->{ version_43? && original_version.eql?("4.3") && !tax_condition.blank?}
     validates :tax, numericality: true, if: -> { tax.present? }
     validates :total, presence: true, numericality: true
     validates :number, presence: true
@@ -99,11 +99,11 @@ module FE
     def version_42?
       @version.eql?("4.2")
     end
-    
+
     def version_43?
       @version.eql?("4.3")
     end
-    
+
 
     def build_xml
       raise FE::Error.new "Documento inválido", class: self.class, messages: errors.messages unless valid?
@@ -118,11 +118,11 @@ module FE
         xml.MontoTotalImpuesto @tax.to_f if @tax
         if version_43? && @original_version.eql?("4.3")
           xml.CodigoActividad @economic_activity if @economic_activity.present?
-          xml.CondicionImpuesto @tax_condition
+          xml.CondicionImpuesto @tax_condition if @tax_condition.present?
           xml.MontoImpuestoAcreditar @creditable_tax.to_f if @creditable_tax.present?
           xml.MontoTotalDeGastoAplicable @applicable_expense.to_f if @applicable_expense.present?
         end
-        
+
         xml.TotalFactura @total
         xml.NumeroCedulaReceptor @receiver_id_number
         xml.NumeroConsecutivoReceptor sequence

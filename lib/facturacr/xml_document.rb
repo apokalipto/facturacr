@@ -30,8 +30,10 @@ module FE
         @document = FE::Ticket.new
       elsif root_tag.eql?("MensajeReceptor")
         @document = FE::ReceptionMessage.new
+      else
+        @document = nil
       end
-      
+
       if @document.is_a?(FE::Document)
         @document.version = @doc.elements.first.namespace.href.scan(/v4\..{1}/).first[1..-1]
         @document.date = DateTime.parse(@doc.css("#{root_tag} FechaEmision").first&.text)
@@ -182,7 +184,7 @@ module FE
         @document.summary = @summary
         @document.references = @references
         @document.regulation = @regulation  
-      else
+      elsif @document.present?
         @document.date = DateTime.parse(@doc.css("#{root_tag} FechaEmisionDoc").text)
         @key = @doc.css("#{root_tag} Clave").text
         @document.key = @key

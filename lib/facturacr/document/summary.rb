@@ -5,7 +5,7 @@ module FE
 
       attr_accessor :currency, :exchange_rate, :services_taxable_total, :services_exent_total, :services_exonerate_total,
                     :goods_taxable_total,:goods_exent_total,:goods_exonerate_total, :taxable_total, :exent_total,:exonerate_total,
-                    :subtotal, :discount_total, :gross_total, :tax_total,:total_iva_returned,:total_others_charges, :net_total,
+                    :subtotal, :discount_total, :gross_total, :tax_total,:total_iva_returned,:total_other_charges, :net_total,
                     :with_credit_card, :document_type, :has_exoneration, :medical_services_condition
 
       validates :currency, presence: true
@@ -35,7 +35,7 @@ module FE
         @gross_total = args[:gross_total].to_f
         @tax_total = args[:tax_total].to_f
         @total_iva_returned = args[:total_iva_returned].to_f
-        @total_others_charges =args[:total_others_charges].to_f
+        @total_other_charges = args[:total_other_charges].to_f
         @net_total = args[:net_total].to_f
         @has_exoneration = args[:has_exoneration] || false
         @medical_services_condition = args[:medical_services_condition] || false
@@ -51,10 +51,10 @@ module FE
           if document.version_42?
             xml.CodigoMoneda @currency if @currency.present?
             xml.TipoCambio @exchange_rate if @exchange_rate.present?
-          elsif document.version_43? && @currency.present? && @currency != "CRC"
+          elsif document.version_43? && @currency.present? #&& @currency != "CRC"
             xml.CodigoTipoMoneda do |x|
               x.CodigoMoneda @currency
-              x.TipoCambio @exchange_rate
+              x.TipoCambio @exchange_rate || 1
             end
           end
 
@@ -73,7 +73,7 @@ module FE
           xml.TotalImpuesto @tax_total
           if document.version_43?
             xml.TotalIVADevuelto @total_iva_returned if @medical_services_condition && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && !document_type.eql?(FE::PurchaseInvoice::DOCUMENT_TYPE)
-            xml.TotalOtrosCargos @total_others_charges
+            xml.TotalOtrosCargos @total_other_charges if @total_other_charges > 0
           end
           xml.TotalComprobante @net_total
         end
@@ -87,9 +87,9 @@ module FE
         if document.version_43?
           errors.add :exonerate_total, :invalid_amount, message: 'invalid amount' if (@exonerate_total - (@services_exonerate_total + @goods_exonerate_total).round(5)).abs > 0.0005
         end
-        errors.add :subtotal, :invalid_amount, message: 'invalid amount' if (@subtotal - (@taxable_total + @exent_total + @exonerate_total).round(5)).abs > 0.0005
+        errors.add :subtotal, :invalid_amount, message: 'invalid amount' if (@subtotal - (@taxable_total + @exent_total + @exonerate_total ).round(5)).abs > 0.0005
         errors.add :gross_total, :invalid_amount, message: 'invalid amount' if (@gross_total - (@subtotal - @discount_total).round(5)).abs > 0.0005
-        errors.add :net_total, :invalid_amount, message: "invalid amount" if (@net_total - (@gross_total + @tax_total + @total_others_charges - @total_iva_returned).round(5)).abs > 0.0005
+        errors.add :net_total, :invalid_amount, message: "invalid amount" if (@net_total - (@gross_total + @tax_total + @total_other_charges - @total_iva_returned).round(5)).abs > 0.0005
       end
     end
   end

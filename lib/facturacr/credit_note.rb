@@ -32,6 +32,7 @@ module FE
       @security_code = args[:security_code]
       @document_situation = args[:document_situation]
       @references = args[:references]
+      @other_charges = args[:other_charges]
       @namespaces = NAMESPACES[@version]
       @others = args[:others] || []
     end

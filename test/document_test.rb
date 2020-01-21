@@ -84,43 +84,42 @@ class DocumentTest < Minitest::Test
     exception = assert_raises(FE::Error){issuer.build_xml(nil, FE::Invoice.new(version: "4.2"))}
   end
   
-  def test_document_with_exoneration
+
+  def test_past_month_invoicing
     id_document = FE::Document::IdentificationDocument.new type: "01", number: "112345678"
     phone = FE::Document::Phone.new country_code: "506", number: "22222222"
     location = FE::Document::Location.new province: "1",county: "01", district: "01", others: "Otras señas"
     issuer = FE::Document::Issuer.new name: "EMISON EJEMPLO", identification_document: id_document, location: location, phone: phone, email: "emisor@ejemplo.com"
 
     reciever_id_document = FE::Document::IdentificationDocument.new type: "02", number: "3102123456"
-    receiver = FE::Document::Receiver.new name: "RECEPTOR EJEMPLO", identification_document: reciever_id_document
+
+    receiver = FE::Document::Receiver.new name: "RECEPTOR EJEMPLO", identification_document: id_document
 
     items = []
-    # Exent Services
+    #TODO exo = FE::Document::Exoneration.new(document_type: "05", document_number: "")
     items << FE::Document::Item.new(comercial_code: "001", line_number: 1, quantity: 1, unit: "Sp", description: "Desarrollo de Software y Mantenimiento", unit_price: 100, subtotal: 100, net_total: 100, total: 100, document_type: FE::Invoice::DOCUMENT_TYPE)
-    
-    # Exonerate Services
-    exo = FE::Document::Exoneration.new(document_type: "05", document_number: "1234", institution: "INSTITUCION", date: Date.parse("2019-01-01"), total_tax: 13, percentage: 100)
-    taxes = [FE::Document::Tax.new(code: "01", rate: 13, total: (100 * 0.13), rate_code: "08", exoneration: exo)]
-    items << FE::Document::Item.new(comercial_code: "002", line_number: 2, quantity: 1, unit: "Sp", description: "Servicios Varios", unit_price: 100, total: 100, taxes: taxes, net_tax: 0, net_total: 100, subtotal: 100, document_type: FE::Invoice::DOCUMENT_TYPE)
-    
-    # Taxable
-    taxes = [FE::Document::Tax.new(code: "01", rate: 13, total: (100 * 0.13), rate_code: "08")]
-    items << FE::Document::Item.new(comercial_code: "003", line_number: 2, quantity: 1, unit: "Sp", description: "Servicios Varios", unit_price: 100, total: 100, taxes: taxes, net_total: 113, subtotal: 100, document_type: FE::Invoice::DOCUMENT_TYPE)
-    
-    summary = FE::Document::Summary.new currency: "USD", exchange_rate: 575, services_exent_total: 100, services_taxable_total: 100, services_exonerate_total: 100, exent_total: 100, taxable_total: 100, exonerate_total: 100, subtotal: 300, gross_total: 300, tax_total: 13, net_total: 313, document_type: FE::Invoice::DOCUMENT_TYPE
+    taxes = [FE::Document::Tax.new(code: "01", rate: 13, total: (100 * 0.13))]
+    items << FE::Document::Item.new(comercial_code: "002", line_number: 2, quantity: 2, unit: "Unid", description: "Impresora de POS", unit_price: 50, total: 100, taxes: taxes, net_total: 113, subtotal: 100, document_type: FE::Ticket::DOCUMENT_TYPE)
+    summary = FE::Document::Summary.new currency: "USD", exchange_rate: 575, services_exent_total: 100, goods_taxable_total: 100, exent_total: 100, taxable_total: 100, subtotal: 200, gross_total: 200, tax_total: 13, net_total: 213, document_type: FE::Invoice::DOCUMENT_TYPE
+
     others = [FE::Document::OtherText.new(xml_attributes: {"code"=>"my123456"}, content: "This is the custom value")]
+    
+    d = Time.now
+    last_month = d - 30
+    references = [FE::Document::Reference.new(document_type: "13", date: last_month)]
 
     payment =["01","03"]
-    invoice = FE::Invoice.new date: Time.now, issuer: issuer, receiver: receiver, number: 1, items: items, condition: "01", summary: summary, security_code: "12345678", document_situation: "1", others: others,payment_type: payment, version: FE.configuration.version
-    result = false
+    invoice = FE::Invoice.new date: d, issuer: issuer, receiver: receiver, number: 1, items: items, condition: "01", summary: summary, security_code: "12345678", document_situation: "1", others: others,payment_type: payment, version: FE.configuration.version, references: references
+    
     begin
-      result = invoice.generate
+      xml = invoice.generate
+      puts xml
     rescue => e
       puts e.message
       ap e.messages if e.respond_to?(:messages)
+      raise "ERROR"
     end
-    assert result
-  end
     
-
+  end
 
 end
