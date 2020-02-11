@@ -30,7 +30,7 @@ module FE
         "xmlns"=>"https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/mensajeReceptor"
       }
     }
-
+    attr_writer :headquarters, :terminal, :key
     attr_accessor :key, :date, :issuer_id_number, :receiver_id_number, :message, :details, :economic_activity,
     :tax_condition,:creditable_tax, :applicable_expense,:tax, :total, :number, :receiver_id_type, :security_code,
     :document_situation, :issuer_id_type, :original_version, :version

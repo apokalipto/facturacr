@@ -40,7 +40,7 @@ module FE
       "2" => "Contingencia",
       "3" => "Sin Internet"
     }.freeze
-
+    attr_writer :headquarters, :terminal, :key
     attr_accessor :serial, :date, :issuer, :receiver, :condition, :credit_term,
                   :payment_type, :service_type, :reference_information,
                   :regulation, :number, :document_type, :security_code,
