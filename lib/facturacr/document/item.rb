@@ -6,7 +6,7 @@ module FE
       UNITS = %w[ Al Alc Cm I Os Spe St Sp m kg s A K mol cd m² m³ m/s m/s² 1/m kg/m³ A/m² A/m mol/m³ cd/m² 1 rad sr Hz N Pa J W C V F Ω S Wb T H °C lm
                  lx Bq Gy Sv kat Pa·s N·m N/m rad/s rad/s² W/m² J/K J/(kg·K) J/kg W/(m·K) J/m³ V/m C/m³ C/m² F/m H/m J/mol J/(mol·K)
                  C/kg Gy/s W/sr W/(m²·sr) kat/m³ min h d º ´ ´´ L t Np B eV u ua Unid Gal g Km ln cm mL mm Oz Otros].freeze
-      SERVICE_UNITS = %w[Al Alc Os Spe Sp St Cm]
+      SERVICE_UNITS = %w[Al Alc Os Spe Sp St min h I Cm]
       CODE_TYPES = {
         '01' => 'Código del producto del vendedor',
         '02' => 'Código del producto del comprador',
@@ -30,7 +30,7 @@ module FE
       validates :discount_reason, presence: true, if: -> { discount.present? }
       validates :subtotal, presence: true
       validates :taxable_base, presence: true, if: ->{ taxes.map{ |t| t.code.eql?("07")}.include?(true) && document.version_43? }
-      validates :net_tax,presence:true, if: ->{ exoneration.present? }
+      validates :net_tax,presence:true, if: ->{ taxes.map{ |t| t.exoneration.present? }.include?(true) }
       validates :net_total, presence: true
       validates :comercial_code_type, inclusion: CODE_TYPES.keys, if: -> { comercial_code.present? }
       validates :comercial_code, presence: true, length: {maximum: 20}
@@ -57,14 +57,14 @@ module FE
         @exoneration = args[:exoneration]
         @net_tax = args[:net_tax]
         @tariff_item = args[:tariff_item]
-
+        @taxable_base = args[:taxable_base]
 
       end
 
       def build_xml(node, document)
         @document = document
         @document_type = document.document_type
-        raise FE::Error.new("item invalid",class: self.class, messages: errors.messages) unless valid?
+        raise FE::Error.new("item invalid: #{ errors.messages.map{|k,v| "#{k}=#{v.join(". ")}"}.join("; ")}",class: self.class, messages: errors.messages) unless valid?
 
         node = Nokogiri::XML::Builder.new if node.nil?
         node.LineaDetalle do |x|
@@ -113,7 +113,7 @@ module FE
             tax.build_xml(x,document)
           end
 
-          x.ImpuestoNeto @net_tax if @net_tax.present? && @exoneration.present?
+          x.ImpuestoNeto @net_tax if @net_tax.present?
           x.MontoTotalLinea @net_total
         end
 

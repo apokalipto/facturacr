@@ -35,7 +35,7 @@ module FE
       # It is a mandatory field when a tax is added, it is obtained from the multiplication of the "subtotal" field by "tax rate"
       # And is a decimal number that can be composed of 13 integers and 5 decimals
       validates :total, presence: true, format: { with: /\A\d{1,13}(\.\d{0,5})?\z/ }
-      validates :exoneration, presence:false, if: ->{:document_type.eql?("09")}
+      #validates :exoneration, presence:false, if: ->{:document_type.eql?("09")}
     #  validates :iva_factor, presence: true, if: ->{  }
 
       def initialize(args={})

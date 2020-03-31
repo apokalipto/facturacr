@@ -17,11 +17,7 @@ module FE
         node.OtroTexto(@xml_attributes) do |xml|
           xml.text(@content)
         end
-      end
-      
-      
-      
-      
+      end  
     end
   end
 end

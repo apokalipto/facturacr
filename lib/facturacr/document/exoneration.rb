@@ -21,6 +21,7 @@ module FE
       validates :institution, presence: true, length: { maximum: 160 }
       validates :date, presence: true
       validates :total_tax,presence: true
+      validates :percentage, presence: true, numericality: {greater_than_or_equal_to: 0, less_than_or_equal_to: 100, only_integer: true}
       
 
       def initialize(args={})

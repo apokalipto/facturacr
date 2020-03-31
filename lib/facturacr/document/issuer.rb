@@ -1,6 +1,3 @@
-require 'active_model'
-require 'nokogiri'
-
 module FE
   class Document
 

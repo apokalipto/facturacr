@@ -1,7 +1,3 @@
-require "facturacr/document"
-require 'active_model'
-require 'nokogiri'
-
 module FE
   class Document
     class PhoneType < Element

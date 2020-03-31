@@ -1,6 +1,4 @@
-require "facturacr/document"
-require 'facturacr/document/phone_type'
-require 'active_model'
+require_relative 'phone_type'
 
 module FE
   class Document

@@ -1,4 +1,4 @@
-require 'facturacr/document'
+require_relative 'document'
 
 module FE
 
