@@ -2,11 +2,11 @@ require 'nokogiri'
 
 require 'facturacr/document'
 
-module FE  
+module FE
   class XmlDocument
-    
+
     attr_accessor :document, :root_tag, :doc, :xml
-    
+
     def initialize(xml_provider)
       # Backwards compatibility with v0.1.4
       if xml_provider.is_a?(String)
@@ -19,7 +19,7 @@ module FE
         config.options = Nokogiri::XML::ParseOptions::NOBLANKS | Nokogiri::XML::ParseOptions::NOENT
       end
       root_tag = @doc.elements.first.name
-      
+
       if root_tag.eql?('FacturaElectronica')
         @document = FE::Invoice.new
       elsif root_tag.eql?("NotaCreditoElectronica")
@@ -60,7 +60,7 @@ module FE
         location.district = @doc.css("#{root_tag} Emisor Ubicacion Distrito").text
         location.others = @doc.css("#{root_tag} Emisor Ubicacion OtrasSenas").text
         @issuer.location = location
-      
+
         if !@doc.css("#{root_tag} Emisor Telefono").empty?
           @issuer.phone = FE::Document::Phone.new country_code: @doc.css("#{root_tag} Emisor Telefono CodigoPais").text, number: @doc.css("#{root_tag} Emisor Telefono CodigoPais").text
         end
@@ -68,19 +68,19 @@ module FE
           @issuer.fax = FE::Document::Phone.new country_code: @doc.css("#{root_tag} Emisor Telefono CodigoPais").text, number: @doc.css("#{root_tag} Emisor Telefono CodigoPais").text
         end
         @issuer.email = @doc.css("#{root_tag} Emisor CorreoElectronico").text
-      
+
         unless @doc.css("#{root_tag} Receptor").empty?
           @receiver = FE::Document::Receiver.new
           @receiver.name = @doc.css("#{root_tag} Receptor Nombre").text
           unless @doc.css("#{root_tag} Receptor Identificacion").empty?
             @receiver.identification_document = FE::Document::IdentificationDocument.new type: @doc.css("#{root_tag} Receptor Identificacion Tipo").text, number: @doc.css("#{root_tag} Receptor Identificacion Numero").text.to_i
           end
-        
+
           unless @doc.css("#{root_tag} Receptor IdentificacionExtranjero").empty?
             @receiver.foreign_id_number = @doc.css("#{root_tag} Receptor IdentificacionExtranjero").text
           end
           @receiver.comercial_name = @doc.css("#{root_tag} Receptor NombreComercial").text unless @doc.css("#{root_tag} Receptor NombreComercial").empty?
-        
+
           unless @doc.css("#{root_tag} Receptor Ubicacion").empty?
             location = FE::Document::Location.new
             location.province = @doc.css("#{root_tag} Receptor Ubicacion Provincia").text
@@ -89,7 +89,7 @@ module FE
             location.others = @doc.css("#{root_tag} Receptor Ubicacion OtrasSenas").text
             @receiver.location = location
           end
-        
+
           if !@doc.css("#{root_tag} Receptor Telefono").empty?
             @issuer.phone = FE::Document::Phone.new country_code: @doc.css("#{root_tag} Receptor Telefono CodigoPais").text, number: @doc.css("#{root_tag} Receptor Telefono CodigoPais").text
           end
@@ -105,7 +105,9 @@ module FE
           if @document.version_42?
             item.code = line.css("Codigo Codigo").text
           elsif @document.version_43?
-            item.code = line.css("CodigoComercial Codigo").text
+            code = line > "Codigo"
+            item.code = code.text
+            item.comercial_code = line.css("CodigoComercial Codigo").text
           end
           item.quantity = line.css("Cantidad").text
           item.unit = line.css("UnidadMedida").text
@@ -130,13 +132,13 @@ module FE
               exo.percentage = line.css("Exoneracion PorcentajeCompra").text.to_i
               t_args[:exoneration] = exo
             end
-            
+
             item.taxes << FE::Document::Tax.new(t_args)
           end
           @items << item
         end
 
-      
+
         @summary = FE::Document::Summary.new
         sum = @doc.css("#{root_tag} ResumenFactura")
         if @document.version_42?
@@ -157,7 +159,7 @@ module FE
         @summary.gross_total = sum.css("TotalVentaNeta").text.to_f
         @summary.tax_total = sum.css("TotalImpuesto").text.to_f
         @summary.net_total = sum.css("TotalComprobante").text.to_f
-      
+
         refs = @doc.css("#{root_tag} InformacionReferencia")
         @references = []
         unless refs.empty?
@@ -171,19 +173,19 @@ module FE
             @references << reference
           end
         end
-      
+
         reg = @doc.css("#{root_tag} Normativa")
         @regulation = FE::Document::Regulation.new
         @regulation.number = reg.css("NumeroResolucion").text
         @regulation.date = reg.css("FechaResolucion").text
-      
-      
+
+
         @document.issuer = @issuer
         @document.receiver = @receiver
         @document.items = @items
         @document.summary = @summary
         @document.references = @references
-        @document.regulation = @regulation  
+        @document.regulation = @regulation
       elsif @document.present?
         @document.date = DateTime.parse(@doc.css("#{root_tag} FechaEmisionDoc").text)
         @key = @doc.css("#{root_tag} Clave").text
@@ -197,9 +199,9 @@ module FE
         @document.security_code = @key[42..-1]
         @document.total = @doc.css("#{root_tag} TotalFactura").text
         @document.tax = @doc.css("#{root_tag} MontoTotalImpuesto").text
-      end      
+      end
     end
-    
+
     def has_tax_node?
       @doc.css("#{root_tag} ResumenFactura TotalImpuesto").any?
     end

@@ -34,7 +34,7 @@ module FE
       validates :net_total, presence: true
       validates :comercial_code_type, inclusion: CODE_TYPES.keys, if: -> { comercial_code.present? }
       validates :comercial_code, presence: true, length: {maximum: 20}
-      validates :code, length: {maximum: 13} #TODO this will be mandatory after 2020-01-01
+      validates :code, presence: true, length: {maximum: 13}, if: :code_is_mandatory?
 
       validate :calculations_ok?
 
@@ -125,7 +125,13 @@ module FE
         errors.add :total, :invalid_amount, message: 'invalid amount' if (@total - (@quantity * @unit_price).round(5)).abs > 1
       end
 
-
+      def code_is_mandatory?
+        if Time.zone.now >= Time.zone.parse("2020-12-01").beginning_of_day
+          true
+        else
+          false
+        end
+      end
     end
   end
 end
