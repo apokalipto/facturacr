@@ -105,7 +105,8 @@ module FE
           if @document.version_42?
             item.code = line.css("Codigo Codigo").text
           elsif @document.version_43?
-            item.code = line.css("Codigo").text
+            code = line > "Codigo"
+            item.code = code.text
             item.comercial_code = line.css("CodigoComercial Codigo").text
           end
           item.quantity = line.css("Cantidad").text
