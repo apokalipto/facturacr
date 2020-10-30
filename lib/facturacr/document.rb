@@ -114,7 +114,7 @@ module FE
     end
 
     def build_xml
-      raise FE::Error.new "Documento inválido", class: self.class, messages: errors.messages unless valid?
+      raise FE::Error.new "Documento inválido #{errors.messages}", class: self.class, messages: errors.messages unless valid?
       builder  = Nokogiri::XML::Builder.new(encoding: 'UTF-8')
 
       builder.send(document_tag, @namespaces) do |xml|
