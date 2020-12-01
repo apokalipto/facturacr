@@ -6,7 +6,7 @@ module FE
       UNITS = %w[ Al Alc Cm I Os Spe St Sp m kg s A K mol cd m² m³ m/s m/s² 1/m kg/m³ A/m² A/m mol/m³ cd/m² 1 rad sr Hz N Pa J W C V F Ω S Wb T H °C lm
                  lx Bq Gy Sv kat Pa·s N·m N/m rad/s rad/s² W/m² J/K J/(kg·K) J/kg W/(m·K) J/m³ V/m C/m³ C/m² F/m H/m J/mol J/(mol·K)
                  C/kg Gy/s W/sr W/(m²·sr) kat/m³ min h d º ´ ´´ L t Np B eV u ua Unid Gal g Km ln cm mL mm Oz Otros].freeze
-      SERVICE_UNITS = %w[Al Alc Os Spe Sp St min h I]
+      SERVICE_UNITS = %w[Al Alc Os Spe Sp St min h I Cm]
       CODE_TYPES = {
         '01' => 'Código del producto del vendedor',
         '02' => 'Código del producto del comprador',
@@ -34,8 +34,8 @@ module FE
       validates :net_total, presence: true
       validates :comercial_code_type, inclusion: CODE_TYPES.keys, if: -> { comercial_code.present? }
       validates :comercial_code, presence: true, length: {maximum: 20}
-      validates :code, length: {maximum: 13} #TODO this will be mandatory after 2020-01-01
-      
+      validates :code, presence: true, length: {maximum: 13}, if: :code_is_mandatory?
+
       validate :calculations_ok?
 
       def initialize(args = {})
@@ -71,7 +71,7 @@ module FE
           x.NumeroLinea @line_number
 
           x.PartidaArancelaria @tariff_item if @tariff_item.present? && document.version_43?
-          
+
           if document.version_43?
             x.Codigo @code if @code.present?
           end
@@ -94,7 +94,7 @@ module FE
           x.Detalle @description
           x.PrecioUnitario @unit_price
           x.MontoTotal @total
-          
+
           if document.version_42?
             x.MontoDescuento @discount if @discount.present?
             x.NaturalezaDescuento @discount_reason if @discount_reason.present?
@@ -118,14 +118,20 @@ module FE
         end
 
       end
-      
-      
-      
+
+
+
       def calculations_ok?
         errors.add :total, :invalid_amount, message: 'invalid amount' if (@total - (@quantity * @unit_price).round(5)).abs > 1
       end
 
-
+      def code_is_mandatory?
+        if Time.zone.now >= Time.zone.parse("2020-12-01").beginning_of_day
+          true
+        else
+          false
+        end
+      end
     end
   end
 end
