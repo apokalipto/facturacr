@@ -76,7 +76,7 @@ class DocumentTest < Minitest::Test
   
   def test_identification_document
     long_name = "abcd" * 20
-    id_document = FE::Document::IdentificationDocument.new type: "01", number: "112345678"
+    id_document = FE::Document::IdentificationDocument.new type: "01", number: "00112345678"
     phone = FE::Document::Phone.new country_code: "506", number: "22222222"
     location = FE::Document::Location.new province: "1",county: "01", district: "01", others: "Otras señas"
     issuer = FE::Document::Issuer.new name: "#{long_name} MAX", identification_document: id_document, location: location, phone: phone, email: "emisor@ejemplo.com"

@@ -17,7 +17,11 @@ module FE
           @document_type = args[:type]
           @raw_id_number = args[:number]
           if @raw_id_number
-            @id_number = "%012d" % args[:number]
+            if @raw_id_number.is_a?(String)
+              @id_number = @raw_id_number.rjust(12,"0")
+            else
+              @id_number = "%012d" % @raw_id_number
+            end
           end
         end
         
