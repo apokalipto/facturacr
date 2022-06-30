@@ -58,7 +58,7 @@ module FE
         @net_tax = args[:net_tax]
         @tariff_item = args[:tariff_item]
         @taxable_base = args[:taxable_base]
-
+        @issued_date = args[:issued_date]
       end
 
       def build_xml(node, document)
@@ -127,7 +127,11 @@ module FE
 
       def code_is_mandatory?
         if Time.zone.now >= Time.zone.parse("2020-12-01").beginning_of_day
-          true
+          if @issued_date.present? && @issued_date < Time.zone.parse("2020-12-01").beginning_of_day
+            false
+          else
+            true
+          end
         else
           false
         end
