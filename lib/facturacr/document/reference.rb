@@ -29,7 +29,6 @@ module FE
         "12"=> "Sustituye Factura de exportación",
         "13"=> "Facturación mes vencido",
         "99"=> "Otros"
-
       }.freeze
       
 
