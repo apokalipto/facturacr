@@ -23,6 +23,7 @@ module FE
       @security_code = args[:security_code]
       @document_situation = args[:document_situation]
       @other_charges = args[:other_charges]
+      @references = args[:references] || []
       @namespaces = {
         "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
         "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",

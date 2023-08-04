@@ -28,6 +28,8 @@ module FE
         "11"=> "Sustituye factura rechazada por el Receptor del comprobante",
         "12"=> "Sustituye Factura de exportación",
         "13"=> "Facturación mes vencido",
+        "14"=> "Comprobante aportado por contribuyente del Régimen de Tributación Simplificado",
+        "15"=> "Sustituye una Factura electrónica de Compra ",
         "99"=> "Otros"
 
       }.freeze
