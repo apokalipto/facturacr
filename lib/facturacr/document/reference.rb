@@ -31,7 +31,6 @@ module FE
         "14"=> "Comprobante aportado por contribuyente del Régimen de Tributación Simplificado",
         "15"=> "Sustituye una Factura electrónica de Compra ",
         "99"=> "Otros"
-
       }.freeze
       
 
