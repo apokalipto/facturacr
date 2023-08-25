@@ -117,6 +117,7 @@ module FE
           item.discount = line.css("MontoDescuento").text.to_f unless line.css("MontoDescuento").empty?
           item.discount_reason = line.css("NaturalezaDescuento").text unless line.css("NaturalezaDescuento").empty?
           item.subtotal = line.css("SubTotal").text.to_f
+          item.net_tax = line.css("ImpuestoNeto").text.to_f
           item.net_total = line.css("MontoTotalLinea").text.to_f
           item.taxes = []
           line.css("Impuesto").each do |tax|
@@ -128,8 +129,8 @@ module FE
               exo.document_number = line.css("Exoneracion NumeroDocumento").text
               exo.institution = line.css("Exoneracion NombreInstitucion").text
               exo.date = DateTime.parse(line.css("Exoneracion FechaEmision").text)
-              exo.total_tax = line.css("Exoneracion MontoImpuesto").text.to_f
-              exo.percentage = line.css("Exoneracion PorcentajeCompra").text.to_i
+              exo.total_tax = line.css("Exoneracion MontoExoneracion").text.to_f
+              exo.percentage = line.css("Exoneracion PorcentajeExoneracion").text.to_i
               t_args[:exoneration] = exo
             end
 
