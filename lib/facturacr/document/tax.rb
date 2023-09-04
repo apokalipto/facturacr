@@ -24,6 +24,7 @@ module FE
         "06"=>"Transitorio 4% ",
         "07"=>"Transitorio 8% ",
         "08"=>"Tarifa general 13%"
+        "09"=>"Tarifa reducida 0.5%"
       }.freeze
       attr_accessor :code, :rate_code ,:rate, :iva_factor, :total, :exoneration, :total_exportation
 
