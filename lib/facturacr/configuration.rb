@@ -24,7 +24,7 @@ module FE
       @key_path = "resources/test.p12"
       @key_password = "test123"
       @api_client_id = 'api-stag'
-      @documents_endpoint = "https://api.comprobanteselectronicos.go.cr/recepcion-sandbox/v1"
+      @documents_endpoint = "https://api-sandbox.comprobanteselectronicos.go.cr/recepcion/v1"
       @authentication_endpoint = "https://idp.comprobanteselectronicos.go.cr/auth/realms/rut-stag/protocol/openid-connect"
     end
 
