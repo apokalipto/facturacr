@@ -160,7 +160,20 @@ module FE
         @summary.gross_total = sum.css("TotalVentaNeta").text.to_f
         @summary.tax_total = sum.css("TotalImpuesto").text.to_f
         @summary.net_total = sum.css("TotalComprobante").text.to_f
-
+        
+        
+        @others = []
+        begin
+          @doc.css("#{root_tag} Otros OtroTexto").each do |o|
+            key = o.attributes.keys.first
+            value = o.attributes[key].try(:value)
+            other = FE::Document::OtherText.new(xml_attributes: [[key,value]].to_h, content: o.text)
+            @others << other
+          end
+        rescue => e
+          puts "Others parse error: #{e.message}"
+        end
+        
         refs = @doc.css("#{root_tag} InformacionReferencia")
         @references = []
         unless refs.empty?
@@ -180,11 +193,13 @@ module FE
         @regulation.number = reg.css("NumeroResolucion").text
         @regulation.date = reg.css("FechaResolucion").text
 
-
+        
+      
         @document.issuer = @issuer
         @document.receiver = @receiver
         @document.items = @items
         @document.summary = @summary
+        @document.others = @others
         @document.references = @references
         @document.regulation = @regulation
       elsif @document.present?
