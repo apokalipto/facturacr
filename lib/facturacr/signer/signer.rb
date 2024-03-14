@@ -5,7 +5,7 @@ require "rexml/xpath"
 
 module FE
   class Signer
-    C14N            = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315" #"http://www.w3.org/2001/10/xml-exc-c14n#"
+    C14N            = "http://www.w3.org/TR/2002/REC-xml-exc-c14n-20020718"#"http://www.w3.org/TR/2001/REC-xml-c14n-20010315" #"http://www.w3.org/2001/10/xml-exc-c14n#"
     DSIG            = "http://www.w3.org/2000/09/xmldsig#"
     NOKOGIRI_OPTIONS = Nokogiri::XML::ParseOptions::STRICT | Nokogiri::XML::ParseOptions::NONET | Nokogiri::XML::ParseOptions::NOENT
     RSA_SHA1        = "http://www.w3.org/2000/09/xmldsig#rsa-sha1"
