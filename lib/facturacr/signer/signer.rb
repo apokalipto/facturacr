@@ -5,7 +5,7 @@ require "rexml/xpath"
 
 module FE
   class Signer
-    C14N            = "http://www.w3.org/2001/10/xml-exc-c14n#"#"http://www.w3.org/TR/2001/REC-xml-c14n-20010315" #"http://www.w3.org/2001/10/xml-exc-c14n#"
+    C14N            = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315" #"http://www.w3.org/2001/10/xml-exc-c14n#"
     DSIG            = "http://www.w3.org/2000/09/xmldsig#"
     NOKOGIRI_OPTIONS = Nokogiri::XML::ParseOptions::STRICT | Nokogiri::XML::ParseOptions::NONET | Nokogiri::XML::ParseOptions::NOENT
     RSA_SHA1        = "http://www.w3.org/2000/09/xmldsig#rsa-sha1"
@@ -223,8 +223,54 @@ module FE
       compute_digest(canonicalize_document(doc,strip),algorithm(digest_algorithm))
     end
     
+    def canonicalize_node(node)
+      return '' if node.comment? || node.text? || node.cdata?
+
+      canonical = "<#{node.name}"
+
+      # Sort and add attributes
+      attributes = node.attribute_nodes.sort_by(&:name)
+      attributes.each do |attr|
+        canonical << " #{attr.name}=\"#{attr.value}\""
+      end
+
+      # Add namespace declarations
+      ns_declarations = node.namespace_definitions
+      ns_declarations.each do |ns|
+        canonical << " xmlns:#{ns.prefix}=\"#{ns.href}\"" if ns.prefix
+      end
+
+      canonical << '>'
+
+      # Recursively process child nodes
+      node.children.each do |child|
+        canonical << canonicalize_node(child)
+      end
+
+      canonical << "</#{node.name}>"
+
+      canonical
+    end
+
+    def canonicalize_xml(xml_string)
+      doc = Nokogiri::XML(xml_string)
+
+      canonical = ''
+      doc.root.children.each do |root_element|
+        canonical << canonicalize_node(root_element)
+      end
+
+      canonical
+    end
+    
     def canonicalize_document(doc,strip=false)
-      doc.canonicalize(canon_algorithm(C14N),NAMESPACES.split(" "))
+      #doc.canonicalize(canon_algorithm(C14N),NAMESPACES.split(" "))
+      canonical = ''
+      doc.root.children.each do |root_element|
+        canonical << canonicalize_node(root_element)
+      end
+
+      canonical
     end
     
     
