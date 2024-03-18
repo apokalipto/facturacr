@@ -264,13 +264,14 @@ module FE
     end
     
     def canonicalize_document(doc,strip=false)
+      doc.canonicalize(canon_algorithm(C14N),nil)
       #doc.canonicalize(canon_algorithm(C14N),NAMESPACES.split(" "))
-      canonical = ''
-      doc.root.children.each do |root_element|
-        canonical << canonicalize_node(root_element)
-      end
-
-      canonical
+      # canonical = ''
+      # doc.root.children.each do |root_element|
+      #   canonical << canonicalize_node(root_element)
+      # end
+      #
+      # canonical
     end
     
     
