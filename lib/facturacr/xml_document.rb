@@ -138,7 +138,17 @@ module FE
           end
           @items << item
         end
-
+        @other_charges = []
+        @doc.css("#{root_tag} OtrosCargos").each do |oc|
+          charge = FE::Document::OtherCharges.new
+          charge.document_type = oc.css("TipoDocumento").text
+          charge.detail = oc.css("Detalle").text
+          charge.percentage = oc.css("Porcentaje").text.to_f
+          charge.total_charge = oc.css("MontoCargo").text.to_f
+          charge.collector_id_number = oc.css("NumeroIdentidadTercero").text
+          charge.collector_name = oc.css("NombreTercero").text
+          @other_charges << charge
+        end
 
         @summary = FE::Document::Summary.new
         sum = @doc.css("#{root_tag} ResumenFactura")
@@ -160,8 +170,8 @@ module FE
         @summary.gross_total = sum.css("TotalVentaNeta").text.to_f
         @summary.tax_total = sum.css("TotalImpuesto").text.to_f
         @summary.net_total = sum.css("TotalComprobante").text.to_f
-        
-        
+
+
         @others = []
         begin
           @doc.css("#{root_tag} Otros OtroTexto").each do |o|
@@ -173,17 +183,17 @@ module FE
         rescue => e
           puts "Others parse error: #{e.message}"
         end
-        
+
         refs = @doc.css("#{root_tag} InformacionReferencia")
         @references = []
         unless refs.empty?
           refs.each do |ref|
             reference = FE::Document::Reference.new
-            reference.document_type = ref.css("TipoDoc")
-            reference.number = ref.css("Numero")
-            reference.date = ref.css("FechaEmision")
-            reference.code = ref.css("Codigo")
-            reference.reason = ref.css("Razon")
+            reference.document_type = ref.css("TipoDoc").text
+            reference.number = ref.css("Numero").text
+            reference.date = ref.css("FechaEmision").text
+            reference.code = ref.css("Codigo").text
+            reference.reason = ref.css("Razon").text
             @references << reference
           end
         end
@@ -193,11 +203,12 @@ module FE
         @regulation.number = reg.css("NumeroResolucion").text
         @regulation.date = reg.css("FechaResolucion").text
 
-        
-      
+
+
         @document.issuer = @issuer
         @document.receiver = @receiver
         @document.items = @items
+        @document.other_charges = @other_charges
         @document.summary = @summary
         @document.others = @others
         @document.references = @references
