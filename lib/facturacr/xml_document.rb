@@ -35,12 +35,6 @@ module FE
       end
 
       if @document.is_a?(FE::Document)
-        puts "document".green
-        ap @doc.elements
-        ap @doc.elements.first
-        ap @doc.elements.first.namespace
-        ap @doc.elements.first.namespace.href
-        puts "document".red
         @document.version = @doc.elements.first.namespace.href.scan(/v4\..{1}/).first[1..-1]
         @document.date = DateTime.parse(@doc.css("#{root_tag} FechaEmision").first&.text)
         if @document.version_43?
