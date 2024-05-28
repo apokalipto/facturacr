@@ -35,10 +35,16 @@ module FE
       end
 
       if @document.is_a?(FE::Document)
+        puts "document".green
+        ap @doc.elements
+        ap @doc.elements.first
+        ap @doc.elements.first.namespace
+        ap @doc.elements.first.namespace.href
+        puts "document".red
         @document.version = @doc.elements.first.namespace.href.scan(/v4\..{1}/).first[1..-1]
         @document.date = DateTime.parse(@doc.css("#{root_tag} FechaEmision").first&.text)
         if @document.version_43?
-          @document.economic_activity = @doc.css("#{root_tag} CodigoActividad").text
+          @document.economic_activity = @doc.css("#{root_tag} CodigoActividad").text if @doc.css("#{root_tag} CodigoActividad").present?
         end
         @key = @doc.css("#{root_tag} Clave").text
         @document.key = @key if @key.present?
@@ -123,6 +129,7 @@ module FE
           line.css("Impuesto").each do |tax|
             exo = nil
             t_args = {code: tax.css("Codigo").text, rate: tax.css("Tarifa").text.to_f, total: tax.css("Monto").text.to_f}
+            t_args[:rate_code] = tax.css("CodigoTarifa").text if @document.version_43?
             unless tax.css("Exoneracion").empty?
               exo = FE::Document::Exoneration.new
               exo.document_type = line.css("Exoneracion TipoDocumento").text
