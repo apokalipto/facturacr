@@ -30,6 +30,8 @@ module FE
         @document = FE::Ticket.new
       elsif root_tag.eql?("MensajeReceptor")
         @document = FE::ReceptionMessage.new
+      elsif root_tag.eql?("FacturaElectronicaCompra")
+        @document = FE::PurchaseInvoice.new
       else
         @document = nil
       end
@@ -119,6 +121,7 @@ module FE
           item.subtotal = line.css("SubTotal").text.to_f
           item.net_tax = line.css("ImpuestoNeto").text.to_f
           item.net_total = line.css("MontoTotalLinea").text.to_f
+          item.taxable_base = line.css("BaseImponible").text.to_f
           item.taxes = []
           line.css("Impuesto").each do |tax|
             exo = nil
@@ -171,6 +174,7 @@ module FE
         @summary.gross_total = sum.css("TotalVentaNeta").text.to_f
         @summary.tax_total = sum.css("TotalImpuesto").text.to_f
         @summary.net_total = sum.css("TotalComprobante").text.to_f
+        @summary.total_other_charges = sum.css("TotalOtrosCargos").text.to_f
 
 
         @others = []
