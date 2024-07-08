@@ -174,6 +174,7 @@ module FE
         @summary.gross_total = sum.css("TotalVentaNeta").text.to_f
         @summary.tax_total = sum.css("TotalImpuesto").text.to_f
         @summary.net_total = sum.css("TotalComprobante").text.to_f
+        @summary.total_iva_returned = sum.css("TotalIVADevuelto").text.to_f
         @summary.total_other_charges = sum.css("TotalOtrosCargos").text.to_f
 
 
