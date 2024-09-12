@@ -17,8 +17,6 @@ module FE
     SHA384          = "http://www.w3.org/2001/04/xmldsig-more#sha384"
     SHA512          = "http://www.w3.org/2001/04/xmlenc#sha512"
     ENVELOPED_SIG   = "http://www.w3.org/2000/09/xmldsig#enveloped-signature"
-    INC_PREFIX_LIST = "#default samlp saml ds xs xsi md"
-    NAMESPACES =      "#default ds xs xsi xades xsd"
 
     XADES           = "http://uri.etsi.org/01903/v1.3.2#"
     XADES141        = "http://uri.etsi.org/01903/v1.4.1#"
@@ -223,55 +221,9 @@ module FE
       compute_digest(canonicalize_document(doc,strip),algorithm(digest_algorithm))
     end
     
-    def canonicalize_node(node)
-      return '' if node.comment? || node.text? || node.cdata?
-
-      canonical = "<#{node.name}"
-
-      # Sort and add attributes
-      attributes = node.attribute_nodes.sort_by(&:name)
-      attributes.each do |attr|
-        canonical << " #{attr.name}=\"#{attr.value}\""
-      end
-
-      # Add namespace declarations
-      ns_declarations = node.namespace_definitions
-      ns_declarations.each do |ns|
-        canonical << " xmlns:#{ns.prefix}=\"#{ns.href}\"" if ns.prefix
-      end
-
-      canonical << '>'
-
-      # Recursively process child nodes
-      node.children.each do |child|
-        canonical << canonicalize_node(child)
-      end
-
-      canonical << "</#{node.name}>"
-
-      canonical
-    end
-
-    def canonicalize_xml(xml_string)
-      doc = Nokogiri::XML(xml_string)
-
-      canonical = ''
-      doc.root.children.each do |root_element|
-        canonical << canonicalize_node(root_element)
-      end
-
-      canonical
-    end
-    
+      
     def canonicalize_document(doc,strip=false)
       doc.canonicalize(canon_algorithm(C14N),nil)
-      #doc.canonicalize(canon_algorithm(C14N),NAMESPACES.split(" "))
-      # canonical = ''
-      # doc.root.children.each do |root_element|
-      #   canonical << canonicalize_node(root_element)
-      # end
-      #
-      # canonical
     end
     
     
@@ -292,7 +244,7 @@ module FE
          Nokogiri::XML::XML_C14N_1_1
        else
          Nokogiri::XML::XML_C14N_EXCLUSIVE_1_0
-     end
+       end
     end
 
     def algorithm(element)
