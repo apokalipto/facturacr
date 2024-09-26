@@ -32,6 +32,8 @@ module FE
         @document = FE::ReceptionMessage.new
       elsif root_tag.eql?("FacturaElectronicaCompra")
         @document = FE::PurchaseInvoice.new
+      elsif root_tag.eql?("FacturaElectronicaExportacion")
+        @document = FE::ExportInvoice.new
       else
         @document = nil
       end
