@@ -113,6 +113,7 @@ module FE
             item.code = code.text
             item.comercial_code = line.css("CodigoComercial Codigo").text
           end
+          item.tariff_item = line.css("PartidaArancelaria").text
           item.quantity = line.css("Cantidad").text
           item.unit = line.css("UnidadMedida").text
           item.description = line.css("Detalle").text
