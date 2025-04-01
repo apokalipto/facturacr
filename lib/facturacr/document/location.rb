@@ -5,12 +5,13 @@ module FE
       class Location < Element
         include ActiveModel::Validations
 
-        attr_accessor :province, :county,:district,:neighborhood, :others
+        attr_accessor :province, :county,:district,:neighborhood, :others,:other_foreign_signs
 
         validates :province, presence: true, length: { is: 1 }
         validates :county, presence: true, length: { is: 2 }
         validates :district, presence: true, length: { is: 2 }
-        validates :neighborhood, length: { is: 2 }, allow_blank: true
+        validates :neighborhood, length: { is: 2 }, allow_blank: true, if: -> {document.version_42? || document.version_43?}
+        validates :neighborhood, length: { maximum: 50 }, allow_blank: true, if: -> {document.version_44?}
         validates :others, presence: true, length: { maximum: 250 }
 
         def initialize(args={})
@@ -20,6 +21,7 @@ module FE
           @district = args[:district]
           @neighborhood = args[:neighborhood]
           @others = args[:others]
+          @other_foreign_signs = args[:other_foreign_signs]
 
 
         end
@@ -33,6 +35,7 @@ module FE
             x.Distrito @district
             x.Barrio @neighborhood unless @neighborhood.nil?
             x.OtrasSenas @others
+            x.OtrasSenasExtranjero @other_foreign_signs if document.version_44?
           end
         end
 
