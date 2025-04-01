@@ -1,4 +1,4 @@
-  require 'facturacr/document'
+require 'facturacr/document'
 
 module FE
 
@@ -12,7 +12,7 @@ module FE
       "4.3" => {
         "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
         "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
-        "xmlns"=>"https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/tiqueteElectronico"#,
+        "xmlns"=>"https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/tiqueteElectronico"#,
       }
     }
     DOCUMENT_TYPE = "04"
@@ -37,6 +37,8 @@ module FE
       @namespaces = NAMESPACES[@version]
       @others = args[:others] || []
       @references = args[:references] || []
+      @software_supplier = args[:software_supplier]
+      @other_condition = args[:other_condition]
     end
 
     def document_tag
