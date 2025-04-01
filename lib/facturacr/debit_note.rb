@@ -13,6 +13,11 @@ module FE
         "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
         "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
         "xmlns"=>"https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/notaDebitoElectronica"#,
+      },
+      "4.4" => {
+        "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
+        "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
+        "xmlns"=>"https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/notaDebitoElectronica"#,
       }
     }
     DOCUMENT_TYPE = "02"
@@ -36,6 +41,9 @@ module FE
       @other_charges = args[:other_charges]
       @namespaces = NAMESPACES[@version]
       @others = args[:others] || []
+      @software_supplier = args[:software_supplier]
+      @receiver_economic_activity = args[:receiver_economic_activity]
+      @other_condition = args[:other_condition]
     end
 
     def document_tag
