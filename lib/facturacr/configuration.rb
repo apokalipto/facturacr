@@ -56,5 +56,9 @@ module FE
       version.eql?('4.3')
     end
 
+    def version_44?
+      version.eql?('4.4')
+    end
+
   end
 end
