@@ -33,7 +33,8 @@ module FE
       "06"=> "Contrato",
       "07"=> "Procedimiento",
       "08"=> "Factura Electrónica de compra",
-      "09"=> "Factura Electronica de exportación"
+      "09"=> "Factura Electronica de exportación",
+      "10"=> "Recibo Electrónico de Pago"
     }.freeze
     DOCUMENT_SITUATION = {
       "1" => "Normal",
@@ -46,9 +47,10 @@ module FE
                   :payment_type, :service_type, :reference_information,
                   :regulation, :number, :document_type, :security_code,
                   :items, :references, :namespaces, :summary, :document_situation,
-                  :headquarters, :terminal, :others, :key, :economic_activity, :other_charges, :version
+                  :headquarters, :terminal, :others, :key, :economic_activity, :other_charges, :version,:software_supplier,:receiver_economic_activity,:other_condition
     validates :version, presence: true
-    validates :economic_activity, presence: true, if: ->{ version.eql?("4.3") }
+    validates :economic_activity, presence: true, if: ->{ version.eql?("4.3") || version.eql?("4.4") }
+    validates :receiver_economic_activity, presence: true, if: ->{version.eql?("4.4") && document_type.eql?("08")}
     validates :date, presence: true
     validates :number, presence: true
     validates :issuer, presence: true
@@ -64,6 +66,8 @@ module FE
     validates :items, presence:true
     validate :payment_types_ok?
     validate :other_charges_ok?, if: -> {@other_charges.present?}
+    validates :software_supplier, presence: true, length: {maximum: 20}, if: ->{ version.eql?("4.4") }
+    validates :other_condition, presence: true,length: {minimum: 5, maximum: 100},if: ->{ version.eql?("4.4") && condition.eql?("99")}
 
     def initialize
       raise FE::Error "Subclasses must implement this method"
@@ -113,23 +117,33 @@ module FE
       @version.eql?("4.3")
     end
 
+    def version_44?
+      @version.eql?("4.4")
+    end
+
     def build_xml
       raise FE::Error.new "Documento inválido #{errors.messages}", class: self.class, messages: errors.messages unless valid?
       builder  = Nokogiri::XML::Builder.new(encoding: 'UTF-8')
 
       builder.send(document_tag, @namespaces) do |xml|
         xml.Clave key
+        xml.ProveedorSistemas @software_supplier if version_44?
         xml.CodigoActividad @economic_activity if version_43?
+        xml.CodigoActividadEmisor @economic_activity if version_44?
+        xml.CodigoActividadReceptor @receiver_economic_activity if version_44?
         xml.NumeroConsecutivo sequence
         xml.FechaEmision @date.xmlschema
         issuer.build_xml(xml, self)
         receiver.build_xml(xml,self) if receiver.present?
         xml.CondicionVenta @condition
+        xml.CondicionVentaOtros @other_condition if version_44?
         xml.PlazoCredito @credit_term if @credit_term.present? && @condition.eql?("02")
 
-        @payment_type.each do |pt|
-          @summary.with_credit_card = true if pt.eql?("02")
-          xml.MedioPago pt
+        if version_42? || version_43?
+          @payment_type.each do |pt|
+            @summary.with_credit_card = true if pt.eql?("02")
+            xml.MedioPago pt
+          end
         end
 
 
@@ -203,13 +217,16 @@ module FE
     end
 
     def payment_types_ok?
-      errors.add :payment_type, "missing payment type" if @payment_type.nil?
-      if @payment_type.is_a?(Array)
-        errors.add :payment_type, "invalid payment types: not included" unless @payment_type.all? {|i| PAYMENT_TYPES.include?(i)}
-      else
-        errors.add :payment_type, "invalid payment type: not array"
+      if version.eql?("4.2") || version.eql?("4.3")
+        errors.add :payment_type, "missing payment type" if @payment_type.nil?
+        if @payment_type.is_a?(Array)
+          errors.add :payment_type, "invalid payment types: not included" unless @payment_type.all? {|i| PAYMENT_TYPES.include?(i)}
+        else
+          errors.add :payment_type, "invalid payment type: not array"
+        end
+      elsif version.eql?("4.4")
+        errors.add :payment_type, "moved to document summary" if @payment_type.present?
       end
-
     end
 
   end
