@@ -28,6 +28,11 @@ module FE
         "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
         "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
         "xmlns"=>"https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/mensajeReceptor"
+      },
+      "4.4" => {
+        "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
+        "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
+        "xmlns"=>"https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/mensajeReceptor"
       }
     }
     attr_writer :headquarters, :terminal, :key
@@ -104,6 +109,10 @@ module FE
       @version.eql?("4.3")
     end
 
+    def version_44?
+      @version.eql?("4.4")
+    end
+
 
     def build_xml
       raise FE::Error.new "Documento inválido #{errors.messages}", class: self.class, messages: errors.messages unless valid?
@@ -125,7 +134,8 @@ module FE
 
         xml.TotalFactura @total
         xml.NumeroCedulaReceptor @receiver_id_number
-        xml.NumeroConsecutivoReceptor sequence
+        xml.NumeroConsecutivoReceptor sequence if version_42? || version_43?
+        xml.NumConsecutivoReceptor sequence if version_44?
       end
 
       builder
