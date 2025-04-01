@@ -3,9 +3,23 @@ require 'facturacr/document'
 module FE
 
   class ExportInvoice < Document
-    validates :receiver, presence: true, if: -> { version.eql?("4.3") }
-    
+
+    NAMESPACES ={
+      "4.3" => {
+        "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
+        "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
+        "xmlns"=>"https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/facturaElectronicaExportacion"#,
+      },
+      "4.4" => {
+        "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
+        "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
+        "xmlns"=>"https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronicaExportacion"#,
+      }}
     DOCUMENT_TYPE = "09"
+
+    validates :receiver, presence: true, if: -> { version.eql?("4.3") }
+
+
     def initialize(args={})
       @version = args[:version]
       @economic_activity = args[:economic_activity]
@@ -22,12 +36,10 @@ module FE
       @security_code = args[:security_code]
       @document_situation = args[:document_situation]
       @other_charges = args[:other_charges]
-      @namespaces = {
-        "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
-        "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
-        "xmlns"=>"https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/facturaElectronicaExportacion"#,
-      }
-    @others = args[:others] || []
+      @namespaces = NAMESPACES[@version]
+      @others = args[:others] || []
+      @software_supplier = args[:software_supplier]
+      @other_condition = args[:other_condition]
     end
 
     def document_tag
