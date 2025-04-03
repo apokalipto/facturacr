@@ -5,10 +5,10 @@ require 'nokogiri'
 module FE
   class Api
     class DocumentStatus
-      
+
       attr_reader :document
       attr_accessor  :json, :xml, :key, :date, :status
-      
+
       def initialize(json)
         @json = json
         @response = JSON.parse(json)
@@ -18,11 +18,11 @@ module FE
         @key = @response["clave"]
         @document = Nokogiri::XML(@xml) if @xml
       end
-      
+
       def details
-        @document.css("MensajeHacienda DetalleMensaje").first.text if @document
+        @document.css("MensajeHacienda DetalleMensaje").first.try(:text) if @document
       end
-      
+
       def to_h
         {
           key: @key,
