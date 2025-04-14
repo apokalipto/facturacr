@@ -30,6 +30,10 @@ module FE
         @document = FE::Ticket.new
       elsif root_tag.eql?("MensajeReceptor")
         @document = FE::ReceptionMessage.new
+      elsif root_tag.eql?("FacturaElectronicaCompra")
+        @document = FE::PurchaseInvoice.new
+      elsif root_tag.eql?("FacturaElectronicaExportacion")
+        @document = FE::ExportInvoice.new
       else
         @document = nil
       end
@@ -38,7 +42,7 @@ module FE
         @document.version = @doc.elements.first.namespace.href.scan(/v4\..{1}/).first[1..-1]
         @document.date = DateTime.parse(@doc.css("#{root_tag} FechaEmision").first&.text)
         if @document.version_43?
-          @document.economic_activity = @doc.css("#{root_tag} CodigoActividad").text
+          @document.economic_activity = @doc.css("#{root_tag} CodigoActividad").text if @doc.css("#{root_tag} CodigoActividad").present?
         end
         @key = @doc.css("#{root_tag} Clave").text
         @document.key = @key if @key.present?
@@ -109,6 +113,7 @@ module FE
             item.code = code.text
             item.comercial_code = line.css("CodigoComercial Codigo").text
           end
+          item.tariff_item = line.css("PartidaArancelaria").text
           item.quantity = line.css("Cantidad").text
           item.unit = line.css("UnidadMedida").text
           item.description = line.css("Detalle").text
@@ -119,10 +124,12 @@ module FE
           item.subtotal = line.css("SubTotal").text.to_f
           item.net_tax = line.css("ImpuestoNeto").text.to_f
           item.net_total = line.css("MontoTotalLinea").text.to_f
+          item.taxable_base = line.css("BaseImponible").text.to_f
           item.taxes = []
           line.css("Impuesto").each do |tax|
             exo = nil
             t_args = {code: tax.css("Codigo").text, rate: tax.css("Tarifa").text.to_f, total: tax.css("Monto").text.to_f}
+            t_args[:rate_code] = tax.css("CodigoTarifa").text if @document.version_43?
             unless tax.css("Exoneracion").empty?
               exo = FE::Document::Exoneration.new
               exo.document_type = line.css("Exoneracion TipoDocumento").text
@@ -138,7 +145,17 @@ module FE
           end
           @items << item
         end
-
+        @other_charges = []
+        @doc.css("#{root_tag} OtrosCargos").each do |oc|
+          charge = FE::Document::OtherCharges.new
+          charge.document_type = oc.css("TipoDocumento").text
+          charge.detail = oc.css("Detalle").text
+          charge.percentage = oc.css("Porcentaje").text.to_f
+          charge.total_charge = oc.css("MontoCargo").text.to_f
+          charge.collector_id_number = oc.css("NumeroIdentidadTercero").text
+          charge.collector_name = oc.css("NombreTercero").text
+          @other_charges << charge
+        end
 
         @summary = FE::Document::Summary.new
         sum = @doc.css("#{root_tag} ResumenFactura")
@@ -160,8 +177,10 @@ module FE
         @summary.gross_total = sum.css("TotalVentaNeta").text.to_f
         @summary.tax_total = sum.css("TotalImpuesto").text.to_f
         @summary.net_total = sum.css("TotalComprobante").text.to_f
-        
-        
+        @summary.total_iva_returned = sum.css("TotalIVADevuelto").text.to_f
+        @summary.total_other_charges = sum.css("TotalOtrosCargos").text.to_f
+
+
         @others = []
         begin
           @doc.css("#{root_tag} Otros OtroTexto").each do |o|
@@ -173,17 +192,17 @@ module FE
         rescue => e
           puts "Others parse error: #{e.message}"
         end
-        
+
         refs = @doc.css("#{root_tag} InformacionReferencia")
         @references = []
         unless refs.empty?
           refs.each do |ref|
             reference = FE::Document::Reference.new
-            reference.document_type = ref.css("TipoDoc")
-            reference.number = ref.css("Numero")
-            reference.date = ref.css("FechaEmision")
-            reference.code = ref.css("Codigo")
-            reference.reason = ref.css("Razon")
+            reference.document_type = ref.css("TipoDoc").text
+            reference.number = ref.css("Numero").text
+            reference.date = ref.css("FechaEmision").text
+            reference.code = ref.css("Codigo").text
+            reference.reason = ref.css("Razon").text
             @references << reference
           end
         end
@@ -193,11 +212,12 @@ module FE
         @regulation.number = reg.css("NumeroResolucion").text
         @regulation.date = reg.css("FechaResolucion").text
 
-        
-      
+
+
         @document.issuer = @issuer
         @document.receiver = @receiver
         @document.items = @items
+        @document.other_charges = @other_charges
         @document.summary = @summary
         @document.others = @others
         @document.references = @references
