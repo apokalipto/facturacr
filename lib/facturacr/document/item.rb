@@ -15,7 +15,7 @@ module FE
         '99' => 'Otros'
       }.freeze
 
-      attr_accessor :line_number,:tariff_item,:code, :comercial_code_type, :comercial_code, :quantity, :unit, :description, :unit_price, :total,
+      attr_accessor :line_number,:tariff_item,:code, :skip_code_validation, :comercial_code_type, :comercial_code, :quantity, :unit, :description, :unit_price, :total,
                     :discount, :discount_reason, :subtotal,:taxable_base ,:taxes,:net_tax ,:net_total, :exoneration, :document_type
 
       validates :document_type, presence: true, inclusion: FE::Document::DOCUMENT_TYPES.keys
@@ -42,6 +42,7 @@ module FE
         @document_type = args[:document_type]
         @line_number = args[:line_number]
         @code = args[:code]
+        @skip_code_validation = args[:skip_code_validation]
         @comercial_code_type = args[:comercial_code_type].presence || '01'
         @comercial_code = args[:comercial_code]
         @quantity = args[:quantity]
@@ -126,11 +127,15 @@ module FE
       end
 
       def code_is_mandatory?
-        if Time.zone.now >= Time.zone.parse("2020-12-01").beginning_of_day
-          if @issued_date.present? && @issued_date < Time.zone.parse("2020-12-01").beginning_of_day
-            false
+        if !@skip_code_validation.present? || !@skip_code_validation
+          if Time.zone.now >= Time.zone.parse("2020-12-01").beginning_of_day
+            if @issued_date.present? && @issued_date < Time.zone.parse("2020-12-01").beginning_of_day
+              false
+            else
+              true
+            end
           else
-            true
+            false
           end
         else
           false
