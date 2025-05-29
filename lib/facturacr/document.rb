@@ -14,6 +14,12 @@ module FE
       "07"=>"Cobro a favor de un tercero",
       "08"=>"Servicios prestados al Estado a crédito ",
       "09"=>"Pago del servicios prestado al Estado ",
+      "10"=>"Venta a crédito en IVA hasta 90 días (Artículo 27, LIVA)",
+      "11"=>"Pago de venta a crédito en IVA hasta 90 días (Artículo 27,LIVA)",
+      "12"=>"Venta Mercancía No Nacionalizada",
+      "13"=>"Venta Bienes Usados No Contribuyente",
+      "14"=>"Arrendamiento Operativo",
+      "15"=>"Arrendamiento Financiero",
       "99"=>"Otros"
     }.freeze
     PAYMENT_TYPES = {
@@ -22,6 +28,8 @@ module FE
       "03"=>"Cheque",
       "04"=>"Transferencia",
       "05"=>"Recaudado por Terceros",
+      "06"=>"SINPE MOVIL",
+      "07"=>"Plataforma Digital",
       "99"=>"Otros"
     }.freeze
     DOCUMENT_TYPES = {
@@ -130,13 +138,13 @@ module FE
         xml.ProveedorSistemas @software_supplier if version_44?
         xml.CodigoActividad @economic_activity if version_43?
         xml.CodigoActividadEmisor @economic_activity if version_44?
-        xml.CodigoActividadReceptor @receiver_economic_activity if version_44?
+        xml.CodigoActividadReceptor @receiver_economic_activity if version_44? && @receiver_economic_activity.present?
         xml.NumeroConsecutivo sequence
         xml.FechaEmision @date.xmlschema
         issuer.build_xml(xml, self)
         receiver.build_xml(xml,self) if receiver.present?
         xml.CondicionVenta @condition
-        xml.CondicionVentaOtros @other_condition if version_44?
+        xml.CondicionVentaOtros @other_condition if version_44? && @other_condition.present?
         xml.PlazoCredito @credit_term if @credit_term.present? && @condition.eql?("02")
 
         if version_42? || version_43?
@@ -247,6 +255,8 @@ require_relative 'document/reference'
 require_relative 'document/regulation'
 require_relative 'document/summary'
 require_relative 'document/tax'
+require_relative 'document/tax_summary'
 require_relative 'document/other_text'
 require_relative 'document/other_content'
 require_relative 'document/other_charges'
+require_relative 'document/payment_method'

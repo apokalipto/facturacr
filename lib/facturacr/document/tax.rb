@@ -21,12 +21,14 @@ module FE
         "03"=>"Tarifa reducida 2%",
         "04"=>"Tarifa reducida 4%",
         "05"=>"Transitorio 0%",
-        "06"=>"Transitorio 4% ",
-        "07"=>"Transitorio 8% ",
+        "06"=>"Transitorio 4%",
+        "07"=>"Transitorio 8%",
         "08"=>"Tarifa general 13%",
-        "09"=>"Tarifa reducida 0.5%"
+        "09"=>"Tarifa reducida 0.5%",
+        "10"=>"Tarifa Exenta%",
+        "11"=>"Tarifa 0% sin derecho a crédito",
       }.freeze
-      attr_accessor :code, :rate_code ,:rate, :iva_factor, :total, :exoneration, :total_exportation
+      attr_accessor :code,:code_reason, :rate_code ,:rate, :iva_factor, :total, :exoneration, :total_exportation,:unit_quantity,:specifit_tax_detail
 
       validates :rate_code, inclusion: RATE_CODES.keys, presence: true, if:->{ document.version_43?}
       validates :code, presence: true, inclusion: TAX_CODES.keys
@@ -38,6 +40,7 @@ module FE
       validates :total, presence: true, format: { with: /\A\d{1,13}(\.\d{0,5})?\z/ }
       #validates :exoneration, presence:false, if: ->{:document_type.eql?("09")}
     #  validates :iva_factor, presence: true, if: ->{  }
+    validates :code_reason, presence: true, if: -> {code.eql?("99") && document.version_44?}
 
       def initialize(args={})
         @code = args[:code]
@@ -47,7 +50,8 @@ module FE
         @total = args[:total]
         @exoneration = args[:exoneration]
         @total_exportation = args[:total_exportation]
-
+        @unit_quantity = args[:unit_quantity]
+        @specifit_tax_detail = args[:specifit_tax_detail]
       end
 
 
@@ -58,10 +62,42 @@ module FE
 
         node.Impuesto do |xml|
           xml.Codigo @code
+          xml.CodigoImpuestoOTRO @x if @code_reason && document.version_44?
           xml.CodigoTarifa @rate_code if @rate_code.present? && document.version_43?
+          xml.CodigoTarifaIVA @rate_code if @rate_code.present? && document.version_44?
           xml.Tarifa @rate
           xml.FactorIva @iva_factor if @iva_factor.present? && document.version_43?
+          xml.FactorCalculoIVA @iva_factor if @iva_factor.present? && document.version_44?
+          if document.version_44? && @specifit_tax_detail.present?
+            @specifit_tax_detail.build_xml(xml,@document)
+          end
           xml.Monto @total
+          xml.MontoExportacion @total_exportation if @total_exportation.present? && document.version_43?
+
+         if exoneration.present?
+           exoneration.build_xml(xml,document)
+         end
+
+        end
+      end
+
+      def build_combo_item(node, document)
+        @document = document
+        raise FE::Error.new("tax invalid",class: self.class, messages: errors.messages) unless valid?
+        node = Nokogiri::XML::Builder.new if node.nil?
+
+        node.ImpuestoSurtido do |xml|
+          xml.CodigoImpuestoSurtido @code
+          xml.CodigoImpuestoOTROSurtido @x if @code_reason && document.version_44?
+          xml.CodigoTarifa @rate_code if @rate_code.present? && document.version_43?
+          xml.CodigoTarifaIVASurtido @rate_code if @rate_code.present? && document.version_44?
+          xml.TarifaSurtido @rate
+          xml.FactorIva @iva_factor if @iva_factor.present? && document.version_43?
+          xml.FactorCalculoIVA @iva_factor if @iva_factor.present? && document.version_44?
+          if document.version_44? && @specifit_tax_detail.present?
+            @specifit_tax_detail.build_combo_item(xml,@document)
+          end
+          xml.MontoImpuestoSurtido @total
           xml.MontoExportacion @total_exportation if @total_exportation.present? && document.version_43?
 
          if exoneration.present?

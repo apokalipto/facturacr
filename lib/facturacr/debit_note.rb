@@ -30,7 +30,7 @@ module FE
       @items = args[:items]
       @number = args[:number]
       @condition = args[:condition]
-      @payment_type = args[:payment_type] || ["01"]
+      @payment_type = args[:payment_type] || ["01"] if version.eql?("4.3")
       @document_type = DOCUMENT_TYPE
       @credit_term = args[:credit_term]
       @summary = args[:summary]

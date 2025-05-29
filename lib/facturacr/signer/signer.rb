@@ -23,7 +23,7 @@ module FE
     XADES           = "http://uri.etsi.org/01903/v1.3.2#"
     XADES141        = "http://uri.etsi.org/01903/v1.4.1#"
     SIGNATURE_POLICY_42 = "https://tribunet.hacienda.go.cr/docs/esquemas/2016/v4/Resolucion%20Comprobantes%20Electronicos%20%20DGT-R-48-2016.pdf"
-    
+
     XMLNS_MAP_42 = {
       "FacturaElectronica" => "https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/facturaElectronica",
       "NotaCreditoElectronica" => "https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/notaCreditoElectronica",
@@ -31,7 +31,7 @@ module FE
       "NotaDebitoElectronica" => "https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/notaDebitoElectronica",
       "MensajeReceptor" => "https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.2/mensajeReceptor"
     }
-    
+
     XMLNS_MAP_43 = {
       "FacturaElectronica" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/facturaElectronica",
       "NotaCreditoElectronica" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/notaCreditoElectronica",
@@ -40,8 +40,18 @@ module FE
       "MensajeReceptor" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/mensajeReceptor",
       "FacturaElectronicaCompra" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/facturaElectronicaCompra",
       "FacturaElectronicaExportacion" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/facturaElectronicaExportacion"
-    }   
-    
+    }
+
+    XMLNS_MAP_44 = {
+      "FacturaElectronica" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica",
+      "NotaCreditoElectronica" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/notaCreditoElectronica",
+      "TiqueteElectronico" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/tiqueteElectronico",
+      "NotaDebitoElectronica" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/notaDebitoElectronica",
+      "MensajeReceptor" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/mensajeReceptor",
+      "FacturaElectronicaCompra" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronicaCompra",
+      "FacturaElectronicaExportacion" => "https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronicaExportacion"
+    }
+
     def initialize(args = {})
       document_provider = args[:xml_provider]
       key_provider = args[:key_provider]
@@ -57,34 +67,35 @@ module FE
       @version = @doc.elements.first.namespace.href.scan(/v4\..{1}/).first[1..-1]
       @xmlns_map = XMLNS_MAP_42 if @version.eql?("4.2")
       @xmlns_map = XMLNS_MAP_43 if @version.eql?("4.3")
+      @xmlns_map = XMLNS_MAP_44 if @version.eql?("4.4")
     end
-        
+
     def sign
       #Build parts for Digest Calculation
       key_info = build_key_info_element
       signed_properties = build_signed_properties_element
       signed_info_element = build_signed_info_element(key_info,signed_properties)
-      
+
       # Compute Signature
       signed_info_canon = canonicalize_document(signed_info_element)
       signature_value = compute_signature(@p12.key,algorithm(RSA_SHA256).new,signed_info_canon)
-                  
+
       ds = Nokogiri::XML::Node.new("ds:Signature", @doc)
       ds["xmlns:ds"] = DSIG
       #ds["Id"] = SIGNATURE_ID#"xmldsig-#{uuid}"
       ds["Id"] = "xmldsig-#{uuid}"
       #ds.add_child(Nokogiri::XML(signed_info_without_ns).root)
       ds.add_child(signed_info_element.root)
-      
+
       sv = Nokogiri::XML::Node.new("ds:SignatureValue", @doc)
       #sv["Id"] = SIGNATURE_VALUE#"xmldsig-#{uuid}-sigvalue"
       sv["Id"] = "xmldsig-#{uuid}-sigvalue"
       sv.content = signature_value
       ds.add_child(sv)
-      
+
       ds.add_child(key_info.root)
-      
-      
+
+
       dsobj = Nokogiri::XML::Node.new("ds:Object",@doc)
       dsobj["Id"] = "xades-obj-#{uuid}"#XADES_OBJECT_ID
       qp = Nokogiri::XML::Node.new("xades:QualifyingProperties",@doc)
@@ -93,19 +104,19 @@ module FE
       qp["Target"] = "#xmldsig-#{uuid}"
       qp["Id"] = "QualifyingProperties-#{uuid}"
       qp.add_child(signed_properties.root)
-      
+
       dsobj.add_child(qp)
       ds.add_child(dsobj)
       @doc.root.add_child(ds)
-      
+
       File.open(@output_path,"w"){|f| f.write(@doc.to_xml(:save_with=>Nokogiri::XML::Node::SaveOptions::AS_XML).gsub(/\r|\n/,""))} if @output_path
-      
+
       @doc.to_xml(:save_with=>Nokogiri::XML::Node::SaveOptions::AS_XML).gsub(/\r|\n/,"")
     end
-    
-    
+
+
     private
-    
+
     def build_key_info_element
       builder  = Nokogiri::XML::Builder.new
       attributes = {
@@ -115,7 +126,7 @@ module FE
         "xmlns:xsi" => "http://www.w3.org/2001/XMLSchema-instance",
         "Id"=>"xmldsig-#{uuid}-keyinfo"
       }
-      
+
       builder.send("ds:KeyInfo", attributes) do |ki|
         ki.send("ds:X509Data") do |kd|
           kd.send("ds:X509Certificate", @x509.to_pem.to_s.gsub("-----BEGIN CERTIFICATE-----","").gsub("-----END CERTIFICATE-----","").gsub(/\n|\r/, ""))
@@ -129,7 +140,7 @@ module FE
       end
       builder.doc
     end
-    
+
     def build_signed_properties_element
       cert_digest = compute_digest(@x509.to_der,algorithm(SHA256))
       signing_time = DateTime.now.rfc3339
@@ -157,21 +168,21 @@ module FE
               end
             end
           end
-          
+
           ssp.send("xades:SignaturePolicyIdentifier") do |spi|
             spi.send("xades:SignaturePolicyId") do |spi2|
               spi2.send("xades:SigPolicyId") do |spi3|
                 spi3.send("xades:Identifier", SIGNATURE_POLICY_42)
                 spi3.send("xades:Description")
               end
-              
+
               spi2.send("xades:SigPolicyHash") do |sph|
                 sph.send("ds:DigestMethod", {"Algorithm"=>"http://www.w3.org/2000/09/xmldsig#sha1"})
                 sph.send("ds:DigestValue", "V8lVVNGDCPen6VELRD1Ja8HARFk=")
               end
             end
           end
-          
+
         end
         sp.send("xades:SignedDataObjectProperties") do |sdop|
           sdop.send("xades:DataObjectFormat", {"ObjectReference"=>"#xmldsig-#{uuid}-ref0"}) do |dof|
@@ -180,12 +191,12 @@ module FE
           end
         end
       end
-      
+
       builder.doc
     end
-    
+
     def build_signed_info_element(key_info_element, signed_props_element)
-      
+
       builder = builder  = Nokogiri::XML::Builder.new
       attributes = {
         "xmlns"=>@xmlns_map[@document_tag],
@@ -208,33 +219,33 @@ module FE
           r.send("ds:DigestMethod", {"Algorithm"=> SHA256})
           r.send("ds:DigestValue", digest_document(key_info_element, SHA256, true))
         end
-                
+
         si.send("ds:Reference",{"Type"=>"http://uri.etsi.org/01903#SignedProperties", "URI"=>"#xmldsig-#{uuid}-signedprops"}) do |r|
           r.send("ds:DigestMethod", {"Algorithm"=> SHA256})
           r.send("ds:DigestValue", digest_document(signed_props_element, SHA256, true))
         end
       end
-      
-            
+
+
       builder.doc
     end
-    
+
     def digest_document(doc, digest_algorithm=SHA256, strip=false)
       compute_digest(canonicalize_document(doc,strip),algorithm(digest_algorithm))
     end
-    
+
     def canonicalize_document(doc,strip=false)
       doc.canonicalize(canon_algorithm(C14N),NAMESPACES.split(" "))
     end
-    
-    
+
+
     def uuid
       @uuid ||= SecureRandom.uuid
     end
-    
+
     def canon_algorithm(element)
      algorithm = element
-     
+
 
      case algorithm
        when "http://www.w3.org/TR/2001/REC-xml-c14n-20010315",
@@ -275,20 +286,20 @@ module FE
      digest = digest_algorithm.digest(document)
      Base64.encode64(digest).strip!
     end
-     
+
   end
-  
+
   class JavaSigner
-    
+
     def initialize(key_file,password,path,out_path)
       @key_file = key_file
       @password = password
       @path = path
       @out_path = out_path
     end
-    
+
     def sign
-      null_device = Gem.win_platform? ? "/nul" : "/dev/null" 
+      null_device = Gem.win_platform? ? "/nul" : "/dev/null"
       system("java -jar #{FE.bin}/signer/signer.jar #{@key_file} #{@password} #{@path} #{@out_path} 1>#{null_device} 2>#{null_device}")
     end
   end

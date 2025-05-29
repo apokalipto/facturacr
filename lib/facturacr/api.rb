@@ -6,9 +6,9 @@ require 'json'
 
 module FE
   class Api
-    
+
     attr_accessor :authentication_endpoint, :document_endpoint, :username, :password, :client_id, :errors, :check_location, :refresh_token
-    
+
     def initialize(configuration = nil)
       @authentication_endpoint = (configuration || FE.configuration).authentication_endpoint
       @document_endpoint = (configuration || FE.configuration).documents_endpoint
@@ -17,7 +17,7 @@ module FE
       @client_id = (configuration || FE.configuration).api_client_id
       @errors = {}
     end
-    
+
     def authenticate
       # Backwards compantibility with configurations that still use contain the token operation in the url.
       url = @authentication_endpoint
@@ -28,13 +28,13 @@ module FE
       json = JSON.parse(response)
       @token = json["access_token"]
       @refresh_token = json["refresh_token"]
-      
+
       @token
     rescue => e
       puts "AUTH ERROR: #{e.message}".red
       raise FE::Error.new("authentication error: #{e.message}",class: self.class)
     end
-    
+
     def logout
       url = @authentication_endpoint
       if @authentication_endpoint.end_with?('token')
@@ -46,56 +46,56 @@ module FE
     rescue => e
       puts "LOGOUT ERROR: #{e.message}".red
     end
-    
-        
+
+
     def send_document(payload)
-      authenticate    
+      authenticate
       response = RestClient.post "#{@document_endpoint}/recepcion", payload.to_json, {:Authorization=> "bearer #{@token}", content_type: :json}
       if response.code.eql?(200) || response.code.eql?(202)
         @check_location = response.headers[:location]
         puts "CheckLocation: #{@check_location}"
-        return true 
+        return true
       end
     rescue => e
       @errors[:request] = {message: e.message}
-      @errors[:response] = e.response if e.respond_to?(:response) 
-      return false      
+      @errors[:response] = e.response if e.respond_to?(:response)
+      return false
     end
-    
+
     def get_document_status(key)
       authenticate
       response = RestClient.get "#{@document_endpoint}/recepcion/#{key}", {:Authorization=> "bearer #{@token}", content_type: :json}
       return FE::Api::DocumentStatus.new(response)
     end
-    
+
     def get_document(key)
       authenticate
       response = RestClient.get "#{@document_endpoint}/comprobantes/#{key}", {:Authorization=> "bearer #{@token}", content_type: :json}
       JSON.parse(response)
     end
-    
+
     def get_documents
       authenticate
       response = RescClient.get "#{@document_endpoint}/comprobantes", {:Authorization => "bearer #{@token}", content_type: :json }
       JSON.parse(response)
     end
-        
-    
+
+
     private
-    
-    
-    
+
+
+
     def auth_data
       {
         grant_type: 'password',
         client_id: @client_id,
         username: @username,
-        password: @password,
-        client_secret: '',
-        scope: ''
+        password: @password
+        # client_secret: '',
+        # scope: ''
       }
     end
-    
+
     def logout_data
       {
         client_id: @client_id,

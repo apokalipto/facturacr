@@ -16,10 +16,11 @@ module FE
             "99" => "Otros Cargos"
         }.freeze
 
-        attr_accessor :document_type, :collector_id_number, :collector_name, :detail, :percentage, :total_charge, :document_type_other
+        attr_accessor :document_type, :collector_id_number, :collector_name, :detail, :percentage, :total_charge, :document_type_other,:collector_id_number_type
 
         validates :document_type, presence: true, inclusion: OTHER_DOCUMENT_TYPES.keys
         validates :collector_id_number, presence: false, if: ->{ document_type.eql?("04") }
+        validates :collector_id_number_type, presence: false, if: ->{ document_type.eql?("04") && document.version_44? }
         validates :detail, presence: true
         validates :total_charge, presence: true
         validates :collector_name, presence: false, if: ->{ document_type.eql?("04") }
@@ -27,6 +28,7 @@ module FE
         def initialize(args={})
           @document_type = args[:document_type]
           @collector_id_number=args[:collector_id_number]
+          @collector_id_number_type=args[:collector_id_number_type]
           @collector_name = args[:collector_name]
           @detail = args[:detail]
           @percentage =args[:percentage]
@@ -42,10 +44,15 @@ module FE
           node.OtrosCargos do |xml|
               xml.TipoDocumento @document_type if document.version_43?
               xml.TipoDocumentoOC @document_type if document.version_44?
-              xml.TipoDocumentoOTROS @document_type_other if document.version_44?
+              xml.TipoDocumentoOTROS @document_type_other if document.version_44? && @document_type_other.present?
               xml.NumeroIdentidadTercero @third_id_number if document.version_43? && @third_id_number.present?
-              xml.NumeroIdentidadTercero @third_id_number if document.version_43? && @third_id_number.present?
-              xml.NombreTercero @third_name if @third_name.present?
+              if document.version_44? && @collector_id_number.present?
+                xml.IdentificacionTercero do |x1|
+                  x1.Tipo @collector_id_number_type
+                  x1.Numero @collector_id_number
+                end
+              end
+              xml.NombreTercero @third_name if @third_name.present? && document.version_43?
               xml.Detalle @detail
               xml.Porcentaje @percentage if @percentage.present? &&  document.version_43?
               xml.PorcentajeOC @percentage if @percentage.present? &&  document.version_44?

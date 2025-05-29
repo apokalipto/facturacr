@@ -12,7 +12,8 @@ module FE
         validates :district, presence: true, length: { is: 2 }
         validates :neighborhood, length: { is: 2 }, allow_blank: true, if: -> {document.version_42? || document.version_43?}
         validates :neighborhood, length: { maximum: 50 }, allow_blank: true, if: -> {document.version_44?}
-        validates :others, presence: true, length: { maximum: 250 }
+        validates :others, presence: true, length: { maximum: 250 }, if: -> {document.version_43?}
+        validates :others, presence: true, length: { minimum: 5,maximum: 160 }, if: -> {document.version_44?}
 
         def initialize(args={})
 
@@ -27,6 +28,7 @@ module FE
         end
 
         def build_xml(node, document)
+          @document = document
           raise FE::Error.new("location invalid",class: self.class, messages: errors.messages) unless valid?
           node = Nokogiri::XML::Builder.new if node.nil?
           node.Ubicacion do |x|
@@ -35,7 +37,7 @@ module FE
             x.Distrito @district
             x.Barrio @neighborhood unless @neighborhood.nil?
             x.OtrasSenas @others
-            x.OtrasSenasExtranjero @other_foreign_signs if document.version_44?
+            x.OtrasSenasExtranjero @other_foreign_signs if document.version_44? && @other_foreign_signs.present?
           end
         end
 

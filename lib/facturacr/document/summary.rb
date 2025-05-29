@@ -6,7 +6,7 @@ module FE
       attr_accessor :currency, :exchange_rate, :services_taxable_total, :services_exent_total, :services_exonerate_total,
                     :goods_taxable_total,:goods_exent_total,:goods_exonerate_total, :taxable_total, :exent_total,:exonerate_total,
                     :subtotal, :discount_total, :gross_total, :tax_total,:total_iva_returned,:total_other_charges, :net_total,
-                    :with_credit_card, :document_type, :has_exoneration, :medical_services_condition
+                    :with_credit_card, :document_type, :has_exoneration, :medical_services_condition,:services_no_taxable_total,:goods_no_taxable_total,:no_taxable_total,:tax_summary
 
       validates :currency, presence: true
       validates :exchange_rate, presence: true, if: -> { currency.present? && currency != "CRC" }
@@ -39,6 +39,14 @@ module FE
         @net_total = args[:net_total].to_f
         @has_exoneration = args[:has_exoneration] || false
         @medical_services_condition = args[:medical_services_condition] || false
+        @services_no_taxable_total = args[:services_no_taxable_total].to_f
+        @goods_no_taxable_total = args[:goods_no_taxable_total].to_f
+        @no_taxable_total = args[:no_taxable_total].to_f
+        @tax_summary = args[:tax_summary]
+        @tax_summary = [@tax_summary] if !@tax_summary.is_a?(Array)
+        @payment_methods = args[:payment_methods]
+        @payment_methods = [@payment_methods] if @payment_methods.present? && !@payment_methods.is_a?(Array)
+
       end
 
       def build_xml(node, document)
@@ -51,7 +59,7 @@ module FE
           if document.version_42?
             xml.CodigoMoneda @currency if @currency.present?
             xml.TipoCambio @exchange_rate if @exchange_rate.present?
-          elsif document.version_43? && @currency.present? #&& @currency != "CRC"
+          elsif (document.version_43? || document.version_44?) && @currency.present?
             xml.CodigoTipoMoneda do |x|
               x.CodigoMoneda @currency
               x.TipoCambio @exchange_rate || 1
@@ -60,20 +68,41 @@ module FE
 
           xml.TotalServGravados @services_taxable_total
           xml.TotalServExentos @services_exent_total
-          xml.TotalServExonerado @services_exonerate_total if @services_exonerate_total && document.version_43? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE)
+          xml.TotalServExonerado @services_exonerate_total if @services_exonerate_total && (document.version_43? || document.version_44?) && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE)
+          xml.TotalServNoSujeto @services_no_taxable_total if @services_no_taxable_total && document.version_44? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE)
           xml.TotalMercanciasGravadas @goods_taxable_total
           xml.TotalMercanciasExentas @goods_exent_total
-          xml.TotalMercExonerada @goods_exonerate_total if @goods_exonerate_total.present? && document.version_43? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE)
+          xml.TotalMercExonerada @goods_exonerate_total if @goods_exonerate_total.present? && (document.version_43? || document.version_44?) && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE)
+          xml.TotalMercNoSujeta @goods_no_taxable_total if @goods_no_taxable_total && document.version_44? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE)
           xml.TotalGravado @taxable_total
           xml.TotalExento @exent_total
-          xml.TotalExonerado @exonerate_total if @exonerate_total.present? && document.version_43? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE)
+          xml.TotalExonerado @exonerate_total if @exonerate_total.present? && (document.version_43? || document.version_44?) && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE)
+          xml.TotalNoSujeto @no_taxable_total if @no_taxable_total && document.version_44? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE)
           xml.TotalVenta @subtotal
           xml.TotalDescuentos @discount_total
           xml.TotalVentaNeta @gross_total
+          if document.version_44? && !@tax_summary.blank?
+            @tax_summary.each do |tax|
+              tax.build_xml(xml,document) if tax.present?
+            end
+          end
+
           xml.TotalImpuesto @tax_total
-          if document.version_43?
+          if document.version_43? || document.version_44?
             xml.TotalIVADevuelto @total_iva_returned if @medical_services_condition && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && !document_type.eql?(FE::PurchaseInvoice::DOCUMENT_TYPE)
             xml.TotalOtrosCargos @total_other_charges if @total_other_charges > 0
+          end
+          if document.version_44? && @payment_methods.present?
+            puts "aksjdbaskdbakjsdbjasd".green
+            puts "aksjdbaskdbakjsdbjasd".green
+            puts "aksjdbaskdbakjsdbjasd".green
+            puts "aksjdbaskdbakjsdbjasd".green
+            puts "aksjdbaskdbakjsdbjasd".green
+            puts "aksjdbaskdbakjsdbjasd".green
+            ap @payment_methods
+            @payment_methods.each do |p|
+              p.build_xml(node,document)
+            end
           end
           xml.TotalComprobante @net_total
         end

@@ -12,6 +12,11 @@ module FE
       "4.3" => {
         "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
         "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
+        "xmlns"=>"https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/tiqueteElectronico"#,
+      },
+      "4.4" => {
+        "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
+        "xmlns:xsd"=>"http://www.w3.org/2001/XMLSchema",
         "xmlns"=>"https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/tiqueteElectronico"#,
       }
     }
@@ -26,7 +31,7 @@ module FE
       @items = args[:items]
       @number = args[:number]
       @condition = args[:condition]
-      @payment_type = args[:payment_type] || ["01"]
+      @payment_type = args[:payment_type] || ["01"] if version.eql?("4.3")
       @document_type = DOCUMENT_TYPE
       @credit_term = args[:credit_term]
       @summary = args[:summary]

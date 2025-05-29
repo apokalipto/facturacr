@@ -3,7 +3,7 @@ module FE
     class Reference < Element
       include ActiveModel::Validations
 
-      attr_accessor :document_type, :number, :date, :code, :reason
+      attr_accessor :document_type, :number, :date, :code, :reason,:other_document_type_ref,:other_reference_code
 
       REFERENCE_CODES = {
         "01" => "Anula Documento de referencia",
@@ -13,7 +13,7 @@ module FE
         "05" => "Sustituye comprobante provisional por contingencia",
         "99" => "Otros"
       }.freeze
-      
+
       DOCUMENT_TYPES = {
         "01"=> "Factura Electronica",
         "02"=> "Nota de débito",
@@ -32,12 +32,12 @@ module FE
         "15"=> "Sustituye una Factura electrónica de Compra ",
         "99"=> "Otros"
       }.freeze
-      
+
 
       validates :document_type, presence: true, inclusion: DOCUMENT_TYPES.keys
       validates :date, presence: true
 
-      validates :number, presence: true, length: {maximum: 50}, if: ->{ document_type.present? && document_type != "13"}
+      validates :number, presence: true, length: {maximum: 50}, if: ->{ document_type.present? && (document_type != "13" && document_type != "14")}
       validates :code, presence: true, length: {is: 2}, inclusion: REFERENCE_CODES.keys, if: ->{ document_type.present? && document_type != "13" }
       validates :reason, presence: true, length: {maximum: 180}, if: ->{ document_type.present? && document_type != "13" }
 
@@ -46,6 +46,8 @@ module FE
         @number = args[:number]
         @date = args[:date]
         @code = args[:code]
+        @other_document_type_ref =  args[:other_document_type_ref]
+        @other_reference_code = args[:other_reference_code]
         @reason = args[:reason]
       end
 
@@ -53,10 +55,14 @@ module FE
         raise FE::Error.new("reference invalid",class: self.class, messages: errors.messages) unless valid?
         node = Nokogiri::XML::Builder.new if node.nil?
         node.InformacionReferencia do |xml|
-          xml.TipoDoc @document_type
+          xml.TipoDoc @document_type if document.version_43?
+          xml.TipoDocIR @document_type if document.version_44?
+          xml.TipoDocRefOTRO @other_document_type_ref if document.version_44? && @other_document_type_ref
           xml.Numero @number if @number.present?
-          xml.FechaEmision @date.xmlschema
+          xml.FechaEmision @date.xmlschema if document.version_43?
+          xml.FechaEmisionIR @date.xmlschema if document.version_44?
           xml.Codigo @code if @code.present?
+          xml.CodigoReferenciaOTRO @other_reference_code if document.version_44? && @other_reference_code
           xml.Razon @reason if @reason.present?
         end
       end
