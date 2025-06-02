@@ -12,6 +12,26 @@ module FE
         "05" => "Transitorio V",
         "06" => "Transitorio IX",
         "07" => "Transitorio XVII",
+        "08" => "Exoneración a Zona Franca",
+        "09" => "Exoneración de servicios complementarios para la exportación articulo 11 RLIVA",
+        "10" => "Órgano de las corporaciones municipales",
+        "11" => "Exenciones Dirección General de Hacienda Autorización de Impuesto Local Concreta",
+        "99" => "Otros"
+      }.freeze
+
+      INSTITUTIONS = {
+        "01" => "Ministerio de Hacienda",
+        "02" => "Ministerio de Relaciones Exteriores y Culto",
+        "03" => "Ministerio de Agricultura y Ganadería",
+        "04" => "Ministerio de Economía, Industria y Comercio",
+        "05" => "Cruz Roja Costarricense",
+        "06" => "Benemérito Cuerpo de Bomberos de Costa Rica",
+        "07" => "Asociación Obras del Espíritu Santo",
+        "08" => "Federación Cruzada Nacional de protección al Anciano(Fecrunapa)",
+        "09" => "Escuela de Agricultura de la Región Húmeda (EARTH)",
+        "10" => "Instituto Centroamericano de Administración de Empresas(INCAE)",
+        "11" => "Junta de Protección Social (JPS)",
+        "12" => "Autoridad Reguladora de los Servicios Públicos (Aresep)",
         "99" => "Otros"
       }.freeze
       attr_accessor :document_type, :document_number, :institution, :date, :total_tax, :percentage, :net_total,:document_type_other,:section,:subsection,:institution_other

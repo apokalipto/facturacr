@@ -34,6 +34,8 @@ module FE
         @document = FE::PurchaseInvoice.new
       elsif root_tag.eql?("FacturaElectronicaExportacion")
         @document = FE::ExportInvoice.new
+      elsif root_tag.eql?("ReciboElectronicoPago")
+        @document = FE::Payment.new
       else
         @document = nil
       end
@@ -43,6 +45,9 @@ module FE
         @document.date = DateTime.parse(@doc.css("#{root_tag} FechaEmision").first&.text)
         if @document.version_43?
           @document.economic_activity = @doc.css("#{root_tag} CodigoActividad").text if @doc.css("#{root_tag} CodigoActividad").present?
+        end
+        if @document.version_44?
+          @document.receiver_economic_activity = @doc.css("#{root_tag} CodigoActividadReceptor").text if @doc.css("#{root_tag} CodigoActividadReceptor").present?
         end
         @key = @doc.css("#{root_tag} Clave").text
         @document.key = @key if @key.present?
@@ -121,6 +126,9 @@ module FE
           item.total = line.css("MontoTotal").text.to_f
           item.discount = line.css("MontoDescuento").text.to_f unless line.css("MontoDescuento").empty?
           item.discount_reason = line.css("NaturalezaDescuento").text unless line.css("NaturalezaDescuento").empty?
+          if @document.version_44?
+            item.discount_code = line.css("CodigoDescuento").text unless line.css("CodigoDescuento").empty?
+          end
           item.subtotal = line.css("SubTotal").text.to_f
           item.net_tax = line.css("ImpuestoNeto").text.to_f
           item.net_total = line.css("MontoTotalLinea").text.to_f
@@ -168,10 +176,13 @@ module FE
         end
         @summary.services_taxable_total = sum.css("TotalServGravados").text.to_f
         @summary.services_exent_total = sum.css("TotalServExentos").text.to_f
+        @summary.services_no_taxable_total = sum.css("TotalServNoSujeto").text.to_f
+        @summary.goods_no_taxable_total = sum.css("TotalMercNoSujeta").text.to_f
         @summary.goods_taxable_total = sum.css("TotalMercanciasGravadas").text.to_f
         @summary.goods_exent_total = sum.css("TotalMercanciasExentas").text.to_f
         @summary.taxable_total = sum.css("TotalGravado").text.to_f
         @summary.exent_total = sum.css("TotalExento").text.to_f
+        @summary.goods_no_taxable_total = sum.css("TotalMercNoSujeta").text.to_f
         @summary.subtotal = sum.css("TotalVenta").text.to_f
         @summary.discount_total = sum.css("TotalDescuentos").text.to_f
         @summary.gross_total = sum.css("TotalVentaNeta").text.to_f
