@@ -66,20 +66,20 @@ module FE
             end
           end
 
-          xml.TotalServGravados @services_taxable_total
-          xml.TotalServExentos @services_exent_total
-          xml.TotalServExonerado @services_exonerate_total if @services_exonerate_total && (document.version_43? || document.version_44?) && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE)
-          xml.TotalServNoSujeto @services_no_taxable_total if @services_no_taxable_total && document.version_44? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE)
-          xml.TotalMercanciasGravadas @goods_taxable_total
-          xml.TotalMercanciasExentas @goods_exent_total
-          xml.TotalMercExonerada @goods_exonerate_total if @goods_exonerate_total.present? && (document.version_43? || document.version_44?) && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE)
-          xml.TotalMercNoSujeta @goods_no_taxable_total if @goods_no_taxable_total && document.version_44? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE)
-          xml.TotalGravado @taxable_total
-          xml.TotalExento @exent_total
-          xml.TotalExonerado @exonerate_total if @exonerate_total.present? && (document.version_43? || document.version_44?) && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE)
-          xml.TotalNoSujeto @no_taxable_total if @no_taxable_total && document.version_44? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE)
+          xml.TotalServGravados @services_taxable_total if !document_type.eql?(FE::Payment::DOCUMENT_TYPE)
+          xml.TotalServExentos @services_exent_total if !document_type.eql?(FE::Payment::DOCUMENT_TYPE)
+          xml.TotalServExonerado @services_exonerate_total if @services_exonerate_total && (document.version_43? || document.version_44?) && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && !document_type.eql?(FE::Payment::DOCUMENT_TYPE)
+          xml.TotalServNoSujeto @services_no_taxable_total if @services_no_taxable_total && document.version_44? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && !document_type.eql?(FE::Payment::DOCUMENT_TYPE)
+          xml.TotalMercanciasGravadas @goods_taxable_total if !document_type.eql?(FE::Payment::DOCUMENT_TYPE)
+          xml.TotalMercanciasExentas @goods_exent_total if !document_type.eql?(FE::Payment::DOCUMENT_TYPE)
+          xml.TotalMercExonerada @goods_exonerate_total if @goods_exonerate_total.present? && (document.version_43? || document.version_44?) && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && !document_type.eql?(FE::Payment::DOCUMENT_TYPE)
+          xml.TotalMercNoSujeta @goods_no_taxable_total if @goods_no_taxable_total && document.version_44? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && !document_type.eql?(FE::Payment::DOCUMENT_TYPE)
+          xml.TotalGravado @taxable_total if !document_type.eql?(FE::Payment::DOCUMENT_TYPE)
+          xml.TotalExento @exent_total if !document_type.eql?(FE::Payment::DOCUMENT_TYPE)
+          xml.TotalExonerado @exonerate_total if @exonerate_total.present? && (document.version_43? || document.version_44?) && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && !document_type.eql?(FE::Payment::DOCUMENT_TYPE)
+          xml.TotalNoSujeto @no_taxable_total if @no_taxable_total && document.version_44? && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && !document_type.eql?(FE::Payment::DOCUMENT_TYPE)
           xml.TotalVenta @subtotal
-          xml.TotalDescuentos @discount_total
+          xml.TotalDescuentos @discount_total if !document_type.eql?(FE::Payment::DOCUMENT_TYPE)
           xml.TotalVentaNeta @gross_total
           if document.version_44? && !@tax_summary.blank?
             @tax_summary.each do |tax|
@@ -93,13 +93,6 @@ module FE
             xml.TotalOtrosCargos @total_other_charges if @total_other_charges > 0
           end
           if document.version_44? && @payment_methods.present?
-            puts "aksjdbaskdbakjsdbjasd".green
-            puts "aksjdbaskdbakjsdbjasd".green
-            puts "aksjdbaskdbakjsdbjasd".green
-            puts "aksjdbaskdbakjsdbjasd".green
-            puts "aksjdbaskdbakjsdbjasd".green
-            puts "aksjdbaskdbakjsdbjasd".green
-            ap @payment_methods
             @payment_methods.each do |p|
               p.build_xml(node,document)
             end
@@ -111,14 +104,16 @@ module FE
       private
 
       def totals_ok?
-        errors.add :taxable_total, :invalid_amount, message: 'invalid amount' if (@taxable_total - (@services_taxable_total + @goods_taxable_total).round(5)).abs > 0.0005
-        errors.add :exent_total, :invalid_amount, message: 'invalid amount' if (@exent_total - (@services_exent_total + @goods_exent_total).round(5)).abs > 0.0005
-        if document.version_43?
-          errors.add :exonerate_total, :invalid_amount, message: 'invalid amount' if (@exonerate_total - (@services_exonerate_total + @goods_exonerate_total).round(5)).abs > 0.0005
+        if !@document_type.eql?(FE::Payment::DOCUMENT_TYPE)
+          errors.add :taxable_total, :invalid_amount, message: 'invalid amount' if (@taxable_total - (@services_taxable_total + @goods_taxable_total).round(5)).abs > 0.0005
+          errors.add :exent_total, :invalid_amount, message: 'invalid amount' if (@exent_total - (@services_exent_total + @goods_exent_total).round(5)).abs > 0.0005
+          if document.version_43?
+            errors.add :exonerate_total, :invalid_amount, message: 'invalid amount' if (@exonerate_total - (@services_exonerate_total + @goods_exonerate_total).round(5)).abs > 0.0005
+          end
+          errors.add :subtotal, :invalid_amount, message: 'invalid amount' if (@subtotal - (@taxable_total + @exent_total + @exonerate_total ).round(5)).abs > 0.0005
+          errors.add :gross_total, :invalid_amount, message: 'invalid amount' if (@gross_total - (@subtotal - @discount_total).round(5)).abs > 0.0005
+          errors.add :net_total, :invalid_amount, message: "invalid amount" if (@net_total - (@gross_total + @tax_total + @total_other_charges - @total_iva_returned).round(5)).abs > 0.0005
         end
-        errors.add :subtotal, :invalid_amount, message: 'invalid amount' if (@subtotal - (@taxable_total + @exent_total + @exonerate_total ).round(5)).abs > 0.0005
-        errors.add :gross_total, :invalid_amount, message: 'invalid amount' if (@gross_total - (@subtotal - @discount_total).round(5)).abs > 0.0005
-        errors.add :net_total, :invalid_amount, message: "invalid amount" if (@net_total - (@gross_total + @tax_total + @total_other_charges - @total_iva_returned).round(5)).abs > 0.0005
       end
     end
   end

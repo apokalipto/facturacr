@@ -58,7 +58,7 @@ module FE
         @document.security_code = @key[42..-1]
         @document.condition = @doc.css("#{root_tag} CondicionVenta").text
         @document.credit_term = @doc.css("#{root_tag} PlazoCredito").text unless @doc.css("#{root_tag} PlazoCredito").empty?
-        @document.payment_type = @doc.css("#{root_tag} MedioPago").first.text
+        @document.payment_type = @doc.css("#{root_tag} MedioPago").first.text if @document.version_43?
         @issuer = FE::Document::Issuer.new
         @issuer.identification_document = FE::Document::IdentificationDocument.new type: @doc.css("#{root_tag} Emisor Identificacion Tipo").text, number: @doc.css("#{root_tag} Emisor Identificacion Numero").text.to_i
         @issuer.name = @doc.css("#{root_tag} Emisor Nombre").text
@@ -116,6 +116,9 @@ module FE
           elsif @document.version_43?
             code = line > "Codigo"
             item.code = code.text
+            item.comercial_code = line.css("CodigoComercial Codigo").text
+          elsif @document.version_44?
+            item.code = line.css("CodigoComercial CodigoCABYS").text
             item.comercial_code = line.css("CodigoComercial Codigo").text
           end
           item.tariff_item = line.css("PartidaArancelaria").text

@@ -51,10 +51,10 @@ module FE
       validates :document_type, presence: true, inclusion: FE::Document::DOCUMENT_TYPES.keys
       validates :line_number, presence: true
       validates :tariff_item, presence: true, length: {is: 12}, if:->{document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && !SERVICE_UNITS.include?(unit) && document.version_43? }
-      validates :quantity, presence: true, numericality: { greater_than_or_equal_to: 0 }
-      validates :unit, presence: true, inclusion: UNITS
+      validates :quantity, presence: true, numericality: { greater_than_or_equal_to: 0 }, if: -> { !document_type.eql?(FE::Payment::DOCUMENT_TYPE)}
+      validates :unit, presence: true, inclusion: UNITS, if: -> { !document_type.eql?(FE::Payment::DOCUMENT_TYPE)}
       validates :description, presence: true, length: { maximum: 200 }
-      validates :unit_price, presence: true
+      validates :unit_price, presence: true, if: -> { !document_type.eql?(FE::Payment::DOCUMENT_TYPE)}
       validates :total, presence: true
       validates :discount, numericality: { grater_than: 0 }, if: -> { discount.present? }
       validates :discount_reason, presence: true, if: -> { discount.present? }
@@ -64,7 +64,7 @@ module FE
       validates :net_tax,presence:true, if: ->{ taxes.map{ |t| t.exoneration.present? }.include?(true) }
       validates :net_total, presence: true
       validates :comercial_code_type, inclusion: CODE_TYPES.keys, if: -> { comercial_code.present? }
-      validates :comercial_code, presence: true, length: {maximum: 20}
+      validates :comercial_code, presence: true, length: {maximum: 20} , if: -> { !document_type.eql?(FE::Payment::DOCUMENT_TYPE)}
       validates :code, presence: true, length: {maximum: 13}, if: :code_is_mandatory?
       validates :transaction_type, length: {is: 2}, if: -> {transaction_type.present? && document.version_44? }
       validates :transaction_type, inclusion: TRANSACTION_TYPES.keys, if: -> {transaction_type.present? && document.version_44?  }
@@ -135,9 +135,9 @@ module FE
               x2.Codigo @comercial_code
             end
           end
-          x.Cantidad @quantity
-          x.UnidadMedida @unit
-          x.TipoTransaccion @transaction_type if document.version_44? && @transaction_type.present? && !@document_type.eql?(FE::Ticket::DOCUMENT_TYPE)
+          x.Cantidad @quantity if @quantity
+          x.UnidadMedida @unit if @unit
+          x.TipoTransaccion @transaction_type if document.version_44? && @transaction_type.present? && !@document_type.eql?(FE::Ticket::DOCUMENT_TYPE) && !@document_type.eql?(FE::Payment::DOCUMENT_TYPE)
           x.Detalle @description
           x.NumeroVINoSerie @vin_number if document.version_44? && @vin_number.present?
 
@@ -149,7 +149,7 @@ module FE
             end
           end
 
-          x.PrecioUnitario @unit_price
+          x.PrecioUnitario @unit_price if @unit_price.present?
           x.MontoTotal @total
 
           if document.version_42?
@@ -228,11 +228,13 @@ module FE
       end
 
       def calculations_ok?
-        errors.add :total, :invalid_amount, message: 'invalid amount' if (@total - (@quantity * @unit_price).round(5)).abs > 1
+        if !@document.document_type.eql?("10")
+          errors.add :total, :invalid_amount, message: 'invalid amount' if (@total - (@quantity * @unit_price).round(5)).abs > 1
+        end
       end
 
       def code_is_mandatory?
-        if !@skip_code_validation.present? || !@skip_code_validation
+        if (!@skip_code_validation.present? || !@skip_code_validation) && !@document_type.eql?(FE::Payment::DOCUMENT_TYPE)
           if Time.zone.now >= Time.zone.parse("2020-12-01").beginning_of_day
             if @issued_date.present? && @issued_date < Time.zone.parse("2020-12-01").beginning_of_day
               false

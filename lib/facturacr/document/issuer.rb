@@ -9,7 +9,7 @@ module FE
 
         validates :name, presence: true
         validates :identification_document, presence: true
-        validates :location, presence: true
+        validates :location, presence: true, if: -> {!document.document_type.eql?(FE::Payment::DOCUMENT_TYPE)}
         validates :email, presence: true,length: {maximum: 160}, format:{with: /\s*\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*\s*/}
 
 
@@ -42,7 +42,7 @@ module FE
             identification_document.build_xml(xml,document)
             xml.NombreComercial @comercial_name if @comercial_name
             xml.Registrofiscal8707 @fiscal_registry_8707 if @fiscal_registry_8707
-            location.build_xml(xml, document)
+            location.build_xml(xml, document) if @location.present?
             phone.build_xml(xml, document) if phone.present?
             fax.build_xml(xml, document) if fax.present?
             if document.version_42? || document.version_43?

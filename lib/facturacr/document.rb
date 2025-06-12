@@ -57,7 +57,7 @@ module FE
                   :items, :references, :namespaces, :summary, :document_situation,
                   :headquarters, :terminal, :others, :key, :economic_activity, :other_charges, :version,:software_supplier,:receiver_economic_activity,:other_condition
     validates :version, presence: true
-    validates :economic_activity, presence: true, if: ->{ version.eql?("4.3") || version.eql?("4.4") }
+    validates :economic_activity, presence: true, if: ->{ version.eql?("4.3") || (version.eql?("4.4") && !document_type.eql?("10")) }
     validates :receiver_economic_activity, presence: true, if: ->{version.eql?("4.4") && document_type.eql?("08")}
     validates :date, presence: true
     validates :number, presence: true
@@ -137,7 +137,9 @@ module FE
         xml.Clave key
         xml.ProveedorSistemas @software_supplier if version_44?
         xml.CodigoActividad @economic_activity if version_43?
-        xml.CodigoActividadEmisor @economic_activity if version_44?
+        if version_44?
+          xml.CodigoActividadEmisor @economic_activity if !document_type.eql?(FE::Payment::DOCUMENT_TYPE)
+        end
         xml.CodigoActividadReceptor @receiver_economic_activity if version_44? && @receiver_economic_activity.present?
         xml.NumeroConsecutivo sequence
         xml.FechaEmision @date.xmlschema
@@ -179,7 +181,7 @@ module FE
 
         regulation.build_xml(xml,self)  if version_42?
 
-        if others.any?
+        if others && others.any?
           xml.Otros do |x|
             @others.each do |o|
               o.build_xml(x, self)

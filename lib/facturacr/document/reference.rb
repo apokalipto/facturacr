@@ -11,6 +11,13 @@ module FE
         "03" => "Corrige monto",
         "04" => "Referencia a otro documento",
         "05" => "Sustituye comprobante provisional por contingencia",
+        "06" => "Devolución de mercancía",
+        "07" => "Sustituye comprobante electrónico",
+        "08" => "Factura Endosada",
+        "09" => "Nota de crédito financiera",
+        "10" => "Nota de débito financiera",
+        "11" => "Proveedor No Domiciliado",
+        "12" => "Crédito por exoneración posterior a la facturación ",
         "99" => "Otros"
       }.freeze
 

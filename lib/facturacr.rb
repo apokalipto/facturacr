@@ -20,6 +20,7 @@ require_relative 'facturacr/signer/signer'
 require_relative 'facturacr/reception_message'
 require_relative 'facturacr/error'
 require_relative 'facturacr/data'
+require_relative 'facturacr/payment'
 
 module FE
   class << self
