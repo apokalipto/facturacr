@@ -6,7 +6,8 @@ module FE
       attr_accessor :currency, :exchange_rate, :services_taxable_total, :services_exent_total, :services_exonerate_total,
                     :goods_taxable_total,:goods_exent_total,:goods_exonerate_total, :taxable_total, :exent_total,:exonerate_total,
                     :subtotal, :discount_total, :gross_total, :tax_total,:total_iva_returned,:total_other_charges, :net_total,
-                    :with_credit_card, :document_type, :has_exoneration, :medical_services_condition,:services_no_taxable_total,:goods_no_taxable_total,:no_taxable_total,:tax_summary
+                    :with_credit_card, :document_type, :has_exoneration, :medical_services_condition,:services_no_taxable_total,
+                    :goods_no_taxable_total,:no_taxable_total,:tax_summary,:total_tax_assumed_by_factory_issuer
 
       validates :currency, presence: true
       validates :exchange_rate, presence: true, if: -> { currency.present? && currency != "CRC" }
@@ -46,6 +47,7 @@ module FE
         @tax_summary = [@tax_summary] if !@tax_summary.is_a?(Array)
         @payment_methods = args[:payment_methods]
         @payment_methods = [@payment_methods] if @payment_methods.present? && !@payment_methods.is_a?(Array)
+        @total_tax_assumed_by_factory_issuer = args[:total_tax_assumed_by_factory_issuer]
 
       end
 
@@ -89,6 +91,7 @@ module FE
 
           xml.TotalImpuesto @tax_total
           if document.version_43? || document.version_44?
+            xml.TotalImpAsumEmisorFabrica @total_tax_assumed_by_factory_issuer if @total_tax_assumed_by_factory_issuer && !document_type.eql?(FE::Payment::DOCUMENT_TYPE)
             xml.TotalIVADevuelto @total_iva_returned if @medical_services_condition && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && !document_type.eql?(FE::PurchaseInvoice::DOCUMENT_TYPE)
             xml.TotalOtrosCargos @total_other_charges if @total_other_charges > 0
           end
