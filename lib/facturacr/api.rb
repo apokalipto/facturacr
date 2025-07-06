@@ -90,8 +90,8 @@ module FE
         grant_type: 'password',
         client_id: @client_id,
         username: @username,
-        password: @password
-        # client_secret: '',
+        password: @password,
+        client_secret: ''
         # scope: ''
       }
     end
