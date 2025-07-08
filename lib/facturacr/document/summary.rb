@@ -91,7 +91,7 @@ module FE
 
           xml.TotalImpuesto @tax_total
           if document.version_43? || document.version_44?
-            xml.TotalImpAsumEmisorFabrica @total_tax_assumed_by_factory_issuer if @total_tax_assumed_by_factory_issuer && !document_type.eql?(FE::Payment::DOCUMENT_TYPE)
+            xml.TotalImpAsumEmisorFabrica @total_tax_assumed_by_factory_issuer if document.version_44? && @total_tax_assumed_by_factory_issuer && !document_type.eql?(FE::Payment::DOCUMENT_TYPE)
             xml.TotalIVADevuelto @total_iva_returned if @medical_services_condition && !document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && !document_type.eql?(FE::PurchaseInvoice::DOCUMENT_TYPE)
             xml.TotalOtrosCargos @total_other_charges if @total_other_charges > 0
           end
