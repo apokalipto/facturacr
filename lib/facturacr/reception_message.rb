@@ -130,12 +130,17 @@ module FE
           xml.CondicionImpuesto @tax_condition if @tax_condition.present?
           xml.MontoImpuestoAcreditar @creditable_tax.to_f if @creditable_tax.present?
           xml.MontoTotalDeGastoAplicable @applicable_expense.to_f if @applicable_expense.present?
+        elsif version_44? && @original_version.eql?("4.4")
+          xml.CodigoActividad @economic_activity if @economic_activity.present?
+          xml.CondicionImpuesto @tax_condition if @tax_condition.present?
+          xml.MontoTotalImpuestoAcreditar @creditable_tax.to_f
+          xml.MontoTotalDeGastoAplicable @applicable_expense.to_f
         end
 
-        xml.TotalFactura @total
+
+        xml.TotalFactura @total.to_f
         xml.NumeroCedulaReceptor @receiver_id_number
-        xml.NumeroConsecutivoReceptor sequence if version_42? || version_43?
-        xml.NumConsecutivoReceptor sequence if version_44?
+        xml.NumeroConsecutivoReceptor sequence if version_42? || version_43? || version_44?
       end
 
       builder
