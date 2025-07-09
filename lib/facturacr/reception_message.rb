@@ -43,8 +43,8 @@ module FE
     validates :version, presence: true
     validates :original_version, presence: true, if: -> { version_43? }
     validates :date, presence: true
-    validates :issuer_id_number, presence: true, length: {is: 12}
-    validates :receiver_id_number, presence: true, length: {is: 12}
+    validates :issuer_id_number, presence: true, length: {is: 12}, if: -> { version_43? }
+    validates :receiver_id_number, presence: true, length: {is: 12}, if: -> { version_43? }
     validates :message, presence: true, inclusion: MESSAGE_TYPES.keys
     validates :tax_condition, inclusion: TAX_CONDITION.keys, presence:true, if: ->{ version_43? && original_version.eql?("4.3") && !tax_condition.blank?}
     validates :tax, numericality: true, if: -> { tax.present? }
