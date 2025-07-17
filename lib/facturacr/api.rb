@@ -91,7 +91,7 @@ module FE
         client_id: @client_id,
         username: @username,
         password: @password
-        # client_secret: '',
+        client_secret: ''
         # scope: ''
       }
     end
