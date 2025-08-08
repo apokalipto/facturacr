@@ -50,7 +50,7 @@ module FE
 
       validates :document_type, presence: true, inclusion: FE::Document::DOCUMENT_TYPES.keys
       validates :line_number, presence: true
-      validates :tariff_item, presence: true, length: {is: 12}, if:->{document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && !SERVICE_UNITS.include?(unit) && document.version_43? }
+      validates :tariff_item, presence: true, length: {is: 12}, if:->{document_type.eql?(FE::ExportInvoice::DOCUMENT_TYPE) && !SERVICE_UNITS.include?(unit) && (document.version_43? || document.version_44?) }
       validates :quantity, presence: true, numericality: { greater_than_or_equal_to: 0 }, if: -> { !document_type.eql?(FE::Payment::DOCUMENT_TYPE)}
       validates :unit, presence: true, inclusion: UNITS, if: -> { !document_type.eql?(FE::Payment::DOCUMENT_TYPE)}
       validates :description, presence: true, length: { maximum: 200 }
@@ -112,7 +112,7 @@ module FE
         node.LineaDetalle do |x|
           x.NumeroLinea @line_number
 
-          x.PartidaArancelaria @tariff_item if @tariff_item.present? && document.version_43?
+          x.PartidaArancelaria @tariff_item if @tariff_item.present? && (document.version_43? || document.version_44?)
 
           if document.version_43?
             x.Codigo @code if @code.present?
