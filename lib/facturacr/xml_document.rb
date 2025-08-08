@@ -118,7 +118,7 @@ module FE
             item.code = code.text
             item.comercial_code = line.css("CodigoComercial Codigo").text
           elsif @document.version_44?
-            item.code = line.css("CodigoComercial CodigoCABYS").text
+            item.code = line.css("CodigoCABYS").text
             item.comercial_code = line.css("CodigoComercial Codigo").text
           end
           item.tariff_item = line.css("PartidaArancelaria").text
@@ -173,7 +173,7 @@ module FE
         if @document.version_42?
           @summary.currency = sum.css("CodigoMoneda").text
           @summary.exchange_rate = sum.css("TipoCambio").text.to_f
-        elsif @document.version_43?
+        elsif @document.version_43? || @document.version_44?
           @summary.currency = sum.css("CodigoTipoMoneda CodigoMoneda").text
           @summary.exchange_rate = sum.css("CodigoTipoMoneda TipoCambio").text.to_f
         end
