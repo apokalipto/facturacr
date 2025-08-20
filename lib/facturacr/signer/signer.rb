@@ -17,8 +17,6 @@ module FE
     SHA384          = "http://www.w3.org/2001/04/xmldsig-more#sha384"
     SHA512          = "http://www.w3.org/2001/04/xmlenc#sha512"
     ENVELOPED_SIG   = "http://www.w3.org/2000/09/xmldsig#enveloped-signature"
-    INC_PREFIX_LIST = "#default samlp saml ds xs xsi md"
-    NAMESPACES =      "#default ds xs xsi xades xsd"
 
     XADES           = "http://uri.etsi.org/01903/v1.3.2#"
     XADES141        = "http://uri.etsi.org/01903/v1.4.1#"
@@ -236,7 +234,7 @@ module FE
     end
 
     def canonicalize_document(doc,strip=false)
-      doc.canonicalize(canon_algorithm(C14N),NAMESPACES.split(" "))
+      doc.canonicalize(canon_algorithm(C14N),nil)
     end
 
 
@@ -257,7 +255,7 @@ module FE
          Nokogiri::XML::XML_C14N_1_1
        else
          Nokogiri::XML::XML_C14N_EXCLUSIVE_1_0
-     end
+       end
     end
 
     def algorithm(element)
