@@ -141,14 +141,21 @@ module FE
             exo = nil
             t_args = {code: tax.css("Codigo").text, rate: tax.css("Tarifa").text.to_f, total: tax.css("Monto").text.to_f}
             t_args[:rate_code] = tax.css("CodigoTarifa").text if @document.version_43?
+            t_args[:rate_code] = tax.css("CodigoTarifaIVA").text if @document.version_44?
             unless tax.css("Exoneracion").empty?
               exo = FE::Document::Exoneration.new
-              exo.document_type = line.css("Exoneracion TipoDocumento").text
+              exo.document_type = line.css("Exoneracion TipoDocumento").text if @document.version_43?
+              exo.document_type = line.css("Exoneracion TipoDocumentoEX1").text if @document.version_44?
               exo.document_number = line.css("Exoneracion NumeroDocumento").text
               exo.institution = line.css("Exoneracion NombreInstitucion").text
-              exo.date = DateTime.parse(line.css("Exoneracion FechaEmision").text)
+              exo.institution_other = line.css("Exoneracion NombreInstitucionOtros") if document.version_44?
+              exo.date = DateTime.parse(line.css("Exoneracion FechaEmision").text) if @document.version_43?
+              exo.date = DateTime.parse(line.css("Exoneracion FechaEmisionEX").text) if @document.version_44?
               exo.total_tax = line.css("Exoneracion MontoExoneracion").text.to_f
-              exo.percentage = line.css("Exoneracion PorcentajeExoneracion").text.to_i
+              exo.percentage = line.css("Exoneracion PorcentajeExoneracion").text.to_i if document.version_43?
+              exo.percentage = line.css("Exoneracion TarifaExonerada").text.to_i if document.version_44?
+              exo.section = line.css("Exoneracion Articulo") if document.version_44?
+              exo.subsection = line.css("Exoneracion Inciso") if document.version_44?
               t_args[:exoneration] = exo
             end
 
