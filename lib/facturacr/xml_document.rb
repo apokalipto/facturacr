@@ -192,7 +192,7 @@ module FE
         @summary.goods_exent_total = sum.css("TotalMercanciasExentas").text.to_f
         @summary.taxable_total = sum.css("TotalGravado").text.to_f
         @summary.exent_total = sum.css("TotalExento").text.to_f
-        @summary.goods_no_taxable_total = sum.css("TotalMercNoSujeta").text.to_f
+        @summary.no_taxable_total = sum.css("TotalNoSujeto").text.to_f
         @summary.subtotal = sum.css("TotalVenta").text.to_f
         @summary.discount_total = sum.css("TotalDescuentos").text.to_f
         @summary.gross_total = sum.css("TotalVentaNeta").text.to_f
