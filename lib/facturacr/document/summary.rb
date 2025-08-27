@@ -113,7 +113,7 @@ module FE
           if document.version_43?
             errors.add :exonerate_total, :invalid_amount, message: 'invalid amount' if (@exonerate_total - (@services_exonerate_total + @goods_exonerate_total).round(5)).abs > 0.0005
           end
-          errors.add :subtotal, :invalid_amount, message: 'invalid amount' if (@subtotal - (@taxable_total + @exent_total + @exonerate_total ).round(5)).abs > 0.0005
+          errors.add :subtotal, :invalid_amount, message: 'invalid amount' if (@subtotal - (@taxable_total + @exent_total + @exonerate_total + @no_taxable_total).round(5)).abs > 0.0005
           errors.add :gross_total, :invalid_amount, message: 'invalid amount' if (@gross_total - (@subtotal - @discount_total).round(5)).abs > 0.0005
           errors.add :net_total, :invalid_amount, message: "invalid amount" if (@net_total - (@gross_total + @tax_total + @total_other_charges - @total_iva_returned).round(5)).abs > 0.0005
         end

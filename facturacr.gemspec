@@ -28,4 +28,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'thor', '~> 1.2.1'
   spec.add_dependency 'activemodel', '>= 3.2'
   spec.add_dependency 'awesome_print', '~> 1.8'
+  spec.add_dependency 'rexml', '~> 3.2', '>= 3.2.4'
+
 end
