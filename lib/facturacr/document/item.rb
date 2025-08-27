@@ -86,7 +86,7 @@ module FE
         @total = args[:total]
         @discount = args[:discount]
         @discount_reason = args[:discount_reason]
-        @discount_code = args[:discount_code] || "01"
+        @discount_code = args[:discount_code] || "07"
         @discount_code_reason = args[:discount_code_reason]
         @subtotal = args[:subtotal]
         @taxes = args[:taxes] || []
@@ -111,7 +111,6 @@ module FE
         node = Nokogiri::XML::Builder.new if node.nil?
         node.LineaDetalle do |x|
           x.NumeroLinea @line_number
-
           x.PartidaArancelaria @tariff_item if @tariff_item.present? && (document.version_43? || document.version_44?)
 
           if document.version_43?
