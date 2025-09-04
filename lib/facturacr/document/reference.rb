@@ -36,7 +36,11 @@ module FE
         "12"=> "Sustituye Factura de exportación",
         "13"=> "Facturación mes vencido",
         "14"=> "Comprobante aportado por contribuyente del Régimen de Tributación Simplificado",
-        "15"=> "Sustituye una Factura electrónica de Compra ",
+        "15"=> "Sustituye una Factura electrónica de Compra",
+        "16"=> "Comprobante de Proveedor No Domiciliado",
+        "17"=> "Nota de Crédito a Factura Electrónica de Compra",
+        "18"=> "Nota de Débito a Factura Electrónica de Compra",
+
         "99"=> "Otros"
       }.freeze
 

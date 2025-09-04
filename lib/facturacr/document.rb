@@ -55,9 +55,10 @@ module FE
                   :payment_type, :service_type, :reference_information,
                   :regulation, :number, :document_type, :security_code,
                   :items, :references, :namespaces, :summary, :document_situation,
-                  :headquarters, :terminal, :others, :key, :economic_activity, :other_charges, :version,:software_supplier,:receiver_economic_activity,:other_condition
+                  :headquarters, :terminal, :others, :key, :economic_activity, :other_charges, :version,
+                  :software_supplier,:receiver_economic_activity,:other_condition
     validates :version, presence: true
-    validates :economic_activity, presence: true, if: ->{ version.eql?("4.3") || (version.eql?("4.4") && !document_type.eql?("10")) }
+    validates :economic_activity, presence: true, if: ->{ version.eql?("4.3") || (version.eql?("4.4") && !document_type.eql?("10") && !document_type.eql?("08")) }
     validates :receiver_economic_activity, presence: true, if: ->{version.eql?("4.4") && document_type.eql?("08")}
     validates :date, presence: true
     validates :number, presence: true
@@ -138,7 +139,7 @@ module FE
         xml.ProveedorSistemas @software_supplier if version_44?
         xml.CodigoActividad @economic_activity if version_43?
         if version_44?
-          xml.CodigoActividadEmisor @economic_activity if !document_type.eql?(FE::Payment::DOCUMENT_TYPE)
+          xml.CodigoActividadEmisor @economic_activity if @economic_activity && !document_type.eql?(FE::Payment::DOCUMENT_TYPE)
         end
         xml.CodigoActividadReceptor @receiver_economic_activity if version_44? && @receiver_economic_activity.present?
         xml.NumeroConsecutivo sequence

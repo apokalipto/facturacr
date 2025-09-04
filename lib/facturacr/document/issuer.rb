@@ -5,11 +5,12 @@ module FE
       class Issuer < Element
         include ActiveModel::Validations
 
-        attr_accessor :name, :identification_document, :comercial_name, :location, :phone, :fax, :email, :fiscal_registry_8707
+        attr_accessor :name, :identification_document, :comercial_name, :location, :phone, :fax, :email,
+                              :fiscal_registry_8707,:other_foreign_signs
 
         validates :name, presence: true
         validates :identification_document, presence: true
-        validates :location, presence: true, if: -> {!document.document_type.eql?(FE::Payment::DOCUMENT_TYPE)}
+        validates :location, presence: true, if: -> {!document.document_type.eql?(FE::Payment::DOCUMENT_TYPE) && !document.document_type.eql?("08")}
         validates :email, presence: true,length: {maximum: 160}, format:{with: /\s*\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*\s*/}
 
 
@@ -30,6 +31,7 @@ module FE
           @fax = args[:fax]
           @email = args[:email]
           @fiscal_registry_8707 = args[:fiscal_registry_8707]
+          @other_foreign_signs = args[:other_foreign_signs]
         end
 
         def build_xml(node, document)
@@ -43,6 +45,7 @@ module FE
             xml.NombreComercial @comercial_name if @comercial_name
             xml.Registrofiscal8707 @fiscal_registry_8707 if @fiscal_registry_8707
             location.build_xml(xml, document) if @location.present?
+            xml.OtrasSenasExtranjero @other_foreign_signs if document.version_44? && @other_foreign_signs.present?
             phone.build_xml(xml, document) if phone.present?
             fax.build_xml(xml, document) if fax.present?
             if document.version_42? || document.version_43?
