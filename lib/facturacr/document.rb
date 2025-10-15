@@ -65,7 +65,7 @@ module FE
     validates :issuer, presence: true
     validates :receiver, presence: true, if: -> {document_type.eql?("01") || document_type.eql?("08")}
     validates :condition, presence: true, inclusion: CONDITIONS.keys
-    validates :credit_term, presence: true, if: ->{ condition.eql?("02") }
+    validates :credit_term, presence: true, if: ->{ ["02","10"].include?(condition) }
     validates :document_type, presence: true, inclusion: DOCUMENT_TYPES.keys
     validates :document_situation, presence: true, inclusion: DOCUMENT_SITUATION.keys
     validates :summary, presence: true
@@ -148,7 +148,7 @@ module FE
         receiver.build_xml(xml,self) if receiver.present?
         xml.CondicionVenta @condition
         xml.CondicionVentaOtros @other_condition if version_44? && @other_condition.present?
-        xml.PlazoCredito @credit_term if @credit_term.present? && @condition.eql?("02")
+        xml.PlazoCredito @credit_term if @credit_term.present? && ["02","10"].include?(@condition)
 
         if version_42? || version_43?
           @payment_type.each do |pt|
