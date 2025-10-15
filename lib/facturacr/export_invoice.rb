@@ -40,6 +40,7 @@ module FE
       @others = args[:others] || []
       @software_supplier = args[:software_supplier]
       @other_condition = args[:other_condition]
+      @references = args[:references] || []
     end
 
     def document_tag
