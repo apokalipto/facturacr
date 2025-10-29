@@ -55,16 +55,17 @@ module FE
                   :payment_type, :service_type, :reference_information,
                   :regulation, :number, :document_type, :security_code,
                   :items, :references, :namespaces, :summary, :document_situation,
-                  :headquarters, :terminal, :others, :key, :economic_activity, :other_charges, :version,:software_supplier,:receiver_economic_activity,:other_condition
+                  :headquarters, :terminal, :others, :key, :economic_activity, :other_charges, :version,
+                  :software_supplier,:receiver_economic_activity,:other_condition
     validates :version, presence: true
-    validates :economic_activity, presence: true, if: ->{ version.eql?("4.3") || (version.eql?("4.4") && !document_type.eql?("10")) }
+    validates :economic_activity, presence: true, if: ->{ version.eql?("4.3") || (version.eql?("4.4") && !document_type.eql?("10") && !document_type.eql?("08")) }
     validates :receiver_economic_activity, presence: true, if: ->{version.eql?("4.4") && document_type.eql?("08")}
     validates :date, presence: true
     validates :number, presence: true
     validates :issuer, presence: true
     validates :receiver, presence: true, if: -> {document_type.eql?("01") || document_type.eql?("08")}
     validates :condition, presence: true, inclusion: CONDITIONS.keys
-    validates :credit_term, presence: true, if: ->{ condition.eql?("02") }
+    validates :credit_term, presence: true, if: ->{ ["02","10"].include?(condition) }
     validates :document_type, presence: true, inclusion: DOCUMENT_TYPES.keys
     validates :document_situation, presence: true, inclusion: DOCUMENT_SITUATION.keys
     validates :summary, presence: true
@@ -138,7 +139,7 @@ module FE
         xml.ProveedorSistemas @software_supplier if version_44?
         xml.CodigoActividad @economic_activity if version_43?
         if version_44?
-          xml.CodigoActividadEmisor @economic_activity if !document_type.eql?(FE::Payment::DOCUMENT_TYPE)
+          xml.CodigoActividadEmisor @economic_activity if @economic_activity && !document_type.eql?(FE::Payment::DOCUMENT_TYPE)
         end
         xml.CodigoActividadReceptor @receiver_economic_activity if version_44? && @receiver_economic_activity.present?
         xml.NumeroConsecutivo sequence
@@ -147,7 +148,7 @@ module FE
         receiver.build_xml(xml,self) if receiver.present?
         xml.CondicionVenta @condition
         xml.CondicionVentaOtros @other_condition if version_44? && @other_condition.present?
-        xml.PlazoCredito @credit_term if @credit_term.present? && @condition.eql?("02")
+        xml.PlazoCredito @credit_term if @credit_term.present? && ["02","10"].include?(@condition)
 
         if version_42? || version_43?
           @payment_type.each do |pt|

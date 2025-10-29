@@ -232,7 +232,8 @@ module FE
     def digest_document(doc, digest_algorithm=SHA256, strip=false)
       compute_digest(canonicalize_document(doc,strip),algorithm(digest_algorithm))
     end
-
+    
+      
     def canonicalize_document(doc,strip=false)
       doc.canonicalize(canon_algorithm(C14N),nil)
     end
