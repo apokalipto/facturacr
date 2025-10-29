@@ -67,12 +67,12 @@ module FE
         node.Exoneracion do |xml|
           xml.TipoDocumento @document_type if document.version_43?
           xml.TipoDocumentoEX1 @document_type if document.version_44?
+          xml.TipoDocumentoOTRO @document_type_other if document.version_44? && @document_type_other.present?
           xml.NumeroDocumento @document_number
           xml.Articulo @section if document.version_44? && @section.present?
           xml.Inciso @subsection if document.version_44? && @subsection.present?
           xml.NombreInstitucion @institution
           xml.NombreInstitucionOtros @institution_other if document.version_44? && @institution_other.present?
-          xml.TipoDocumentoOTRO @document_type_other if document.version_44? && @document_type_other.present?
           xml.FechaEmision @date.xmlschema if document.version_43?
           xml.FechaEmisionEX @date.xmlschema if document.version_44?
           xml.PorcentajeExoneracion @percentage if document.version_43?
