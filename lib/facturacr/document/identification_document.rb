@@ -10,17 +10,22 @@ module FE
         attr_accessor :document_type, :id_number, :raw_id_number
 
         validates :document_type, presence: true, inclusion: TYPES.keys
-        validates :id_number, presence: true, length: {is: 12}
+        validates :id_number, presence: true, length: {is: 12}, if: -> { !document_type.eql?("05") }
+        validates :id_number, presence: true, length: {maximum: 20}, if: -> { document_type.eql?("05") }
 
         def initialize(args={})
 
           @document_type = args[:type]
           @raw_id_number = args[:number]
           if @raw_id_number
-            if @raw_id_number.is_a?(String)
-              @id_number = @raw_id_number.rjust(12,"0")
+            if @document_type.eql?("05")
+              @id_number = @raw_id_number
             else
-              @id_number = "%012d" % @raw_id_number
+              if @raw_id_number.is_a?(String)
+                @id_number = @raw_id_number.rjust(12,"0")
+              else
+                @id_number = "%012d" % @raw_id_number
+              end
             end
           end
         end
