@@ -7,7 +7,7 @@ module FE
                     :goods_taxable_total,:goods_exent_total,:goods_exonerate_total, :taxable_total, :exent_total,:exonerate_total,
                     :subtotal, :discount_total, :gross_total, :tax_total,:total_iva_returned,:total_other_charges, :net_total,
                     :with_credit_card, :document_type, :has_exoneration, :medical_services_condition,:services_no_taxable_total,
-                    :goods_no_taxable_total,:no_taxable_total,:tax_summary,:total_tax_assumed_by_factory_issuer
+                    :goods_no_taxable_total,:no_taxable_total,:tax_summary,:total_tax_assumed_by_factory_issuer,:payment_methods
 
       validates :currency, presence: true
       validates :exchange_rate, presence: true, if: -> { currency.present? && currency != "CRC" }

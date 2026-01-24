@@ -200,7 +200,18 @@ module FE
         @summary.net_total = sum.css("TotalComprobante").text.to_f
         @summary.total_iva_returned = sum.css("TotalIVADevuelto").text.to_f
         @summary.total_other_charges = sum.css("TotalOtrosCargos").text.to_f
-
+        
+        if @document.version_44?
+          @payment_methods = []
+          sum.css("MedioPago").each do |pm|
+            payment_method = FE::Document::PaymentMethod.new
+            payment_method.payment_type = pm.css("TipoMedioPago").text
+            payment_method.payment_type_other = pm.css("MedioPagoOtros").text
+            payment_method.amount = pm.css("TotalMedioPago").text.to_f
+            @payment_methods << payment_method
+          end
+          @summary.payment_methods = @payment_methods
+        end
 
         @others = []
         begin
