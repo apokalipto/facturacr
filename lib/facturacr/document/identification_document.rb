@@ -11,7 +11,7 @@ module FE
 
         validates :document_type, presence: true, inclusion: TYPES.keys
         validates :id_number, presence: true, length: {is: 12}, if: -> { !document_type.eql?("05") }
-        validates :id_number, presence: true, length: {maximum: 20}, if: -> { document_type.eql?("05") }
+        validates :id_number, length: {maximum: 20}, if: -> { document_type.eql?("05") }
 
         def initialize(args={})
 
