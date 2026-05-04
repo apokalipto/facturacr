@@ -64,7 +64,7 @@ module FE
       validates :net_tax,presence:true, if: ->{ taxes.map{ |t| t.exoneration.present? }.include?(true) }
       validates :net_total, presence: true
       validates :comercial_code_type, inclusion: CODE_TYPES.keys, if: -> { comercial_code.present? }
-      validates :comercial_code, presence: true, length: {maximum: 20} , if: -> { !document_type.eql?(FE::Payment::DOCUMENT_TYPE)}
+      validates :comercial_code, length: {maximum: 20} , if: -> { comercial_code.present? && !document_type.eql?(FE::Payment::DOCUMENT_TYPE)}
       validates :code, presence: true, length: {maximum: 13}, if: :code_is_mandatory?
       validates :transaction_type, length: {is: 2}, if: -> {transaction_type.present? && document.version_44? }
       validates :transaction_type, inclusion: TRANSACTION_TYPES.keys, if: -> {transaction_type.present? && document.version_44?  }
