@@ -53,6 +53,7 @@ module FE
                 end
               end
               xml.NombreTercero @third_name if @third_name.present? && document.version_43?
+              xml.NombreTercero @collector_name if @collector_name.present? && document.version_44?
               xml.Detalle @detail
               xml.Porcentaje @percentage if @percentage.present? &&  document.version_43?
               xml.PorcentajeOC @percentage if @percentage.present? &&  document.version_44?
