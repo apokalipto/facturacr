@@ -7,8 +7,7 @@ module FE
 
       REFERENCE_CODES = {
         "01" => "Anula Documento de referencia",
-        "02" => "Corrige texto documento de referencia",
-        "03" => "Corrige monto",
+        "02" => "Corrige monto",
         "04" => "Referencia a otro documento",
         "05" => "Sustituye comprobante provisional por contingencia",
         "06" => "Devolución de mercancía",
