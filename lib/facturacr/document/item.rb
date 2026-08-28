@@ -100,6 +100,7 @@ module FE
         @combo_items = args[:combo_items]
         @combo_items = [args[:combo_items]] if args[:combo_items].is_a?(Hash)
         @vin_number = args[:vin_number]
+        @vin_number = [args[:vin_number]] if args[:vin_number].is_a?(Hash)
         @tax_assumed_by_factory_issuer = args[:tax_assumed_by_factory_issuer]
       end
 
@@ -138,7 +139,12 @@ module FE
           x.UnidadMedida @unit if @unit
           x.TipoTransaccion @transaction_type if document.version_44? && @transaction_type.present? && !@document_type.eql?(FE::Ticket::DOCUMENT_TYPE) && !@document_type.eql?(FE::Payment::DOCUMENT_TYPE)
           x.Detalle @description
-          x.NumeroVINoSerie @vin_number if document.version_44? && @vin_number.present?
+          if document.version_44? && @vin_number.present?
+            @vin_number.each do |vin|
+              x.NumeroVINoSerie vin
+            end
+          end
+
 
           if document.version_44? && @combo_items.present?
             x.DetalleSurtido do |x2|
