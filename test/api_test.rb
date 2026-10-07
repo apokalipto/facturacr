@@ -8,6 +8,7 @@ class ApiTest < Minitest::Test
   end
   
   def setup
+    skip "Talks to the Hacienda API; set FE_API_TESTS=1 to run" unless ENV["FE_API_TESTS"]
     FE.configure do |config|
       config.mode = "file"
       config.file_path = "tmp/config.yml"
