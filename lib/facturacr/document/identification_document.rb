@@ -7,11 +7,13 @@ module FE
 
         TYPES = {'01'=>'Cédula Fisica', '02'=>'Cédula Jurídica', '03'=>'DIMEX', '04'=>'NITE','05'=> 'Extranjero No Domiciliado','06' => 'No Contribuyente'  }
 
-        attr_accessor :document_type, :id_number, :raw_id_number
+        attr_accessor :document_type, :id_number, :raw_id_number, :document
 
         validates :document_type, presence: true, inclusion: TYPES.keys
         validates :id_number, presence: true, length: {is: 12}, if: -> { !document_type.eql?("05") }
         validates :id_number, length: {maximum: 20}, if: -> { document_type.eql?("05") }
+        validates :id_number, format: { with: /\A\d+\z/ }, if: -> { document_type.eql?("02") && !document&.version_44? }
+        validates :id_number, format: { with: /\A[0-9A-Za-z]+\z/ }, if: -> { document_type.eql?("02") && document&.version_44? }
 
         def initialize(args={})
 
@@ -31,6 +33,7 @@ module FE
         end
 
         def build_xml(node, document)
+          @document = document
           raise FE::Error.new("invalid identification document", class: self.class, messages: errors.messages) unless valid?
           node = Nokogiri::XML::Builder.new if node.nil?
           node.Identificacion do |x|

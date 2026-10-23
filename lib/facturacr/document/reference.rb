@@ -16,7 +16,12 @@ module FE
         "09" => "Nota de crédito financiera",
         "10" => "Nota de débito financiera",
         "11" => "Proveedor No Domiciliado",
-        "12" => "Crédito por exoneración posterior a la facturación ",
+        "12" => "Nota de crédito financiera por exoneración posterior a la facturación",
+        "13" => "Anula documento de referencia por error material",
+        "14" => "Corrige monto por error material",
+        "15" => "Sustituye comprobante electrónico por error material",
+        "16" => "Sustituye comprobante electrónico rechazado",
+        "17" => "Pago a comprobante electrónico",
         "99" => "Otros"
       }.freeze
 
@@ -39,6 +44,8 @@ module FE
         "16"=> "Comprobante de Proveedor No Domiciliado",
         "17"=> "Nota de Crédito a Factura Electrónica de Compra",
         "18"=> "Nota de Débito a Factura Electrónica de Compra",
+        "19"=> "Factura Electrónica de Exportación",
+        "20"=> "Recibo Electrónico de Pago",
 
         "99"=> "Otros"
       }.freeze
