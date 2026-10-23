@@ -60,7 +60,7 @@ module FE
         @document.credit_term = @doc.css("#{root_tag} PlazoCredito").text unless @doc.css("#{root_tag} PlazoCredito").empty?
         @document.payment_type = @doc.css("#{root_tag} MedioPago").first.text if @document.version_43?
         @issuer = FE::Document::Issuer.new
-        @issuer.identification_document = FE::Document::IdentificationDocument.new type: @doc.css("#{root_tag} Emisor Identificacion Tipo").text, number: @doc.css("#{root_tag} Emisor Identificacion Numero").text.to_i
+        @issuer.identification_document = FE::Document::IdentificationDocument.new type: @doc.css("#{root_tag} Emisor Identificacion Tipo").text, number: parse_id_number(@doc.css("#{root_tag} Emisor Identificacion Numero").text)
         @issuer.name = @doc.css("#{root_tag} Emisor Nombre").text
         @issuer.comercial_name = @doc.css("#{root_tag} Emisor NombreComercial").text unless @doc.css("#{root_tag} Emisor NombreComercial").empty?
         location = FE::Document::Location.new
@@ -82,7 +82,7 @@ module FE
           @receiver = FE::Document::Receiver.new
           @receiver.name = @doc.css("#{root_tag} Receptor Nombre").text
           unless @doc.css("#{root_tag} Receptor Identificacion").empty?
-            @receiver.identification_document = FE::Document::IdentificationDocument.new type: @doc.css("#{root_tag} Receptor Identificacion Tipo").text, number: @doc.css("#{root_tag} Receptor Identificacion Numero").text.to_i
+            @receiver.identification_document = FE::Document::IdentificationDocument.new type: @doc.css("#{root_tag} Receptor Identificacion Tipo").text, number: parse_id_number(@doc.css("#{root_tag} Receptor Identificacion Numero").text)
           end
 
           unless @doc.css("#{root_tag} Receptor IdentificacionExtranjero").empty?
@@ -272,6 +272,11 @@ module FE
 
     def has_tax_node?
       @doc.css("#{root_tag} ResumenFactura TotalImpuesto").any?
+    end
+
+    # 4.4 allows alphanumeric cédulas jurídicas, so the number is kept as text
+    def parse_id_number(number)
+      @document.version_44? ? number.strip : number.to_i
     end
   end
 end

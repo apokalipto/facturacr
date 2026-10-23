@@ -168,7 +168,10 @@ module FE
     end
 
     def infer_id_type(id_number)
-      if id_number.to_i.to_s.size == 9
+      # In 4.4 only cédulas jurídicas may contain letters
+      if version_44? && id_number.to_s.match?(/[A-Za-z]/)
+        "02"
+      elsif id_number.to_i.to_s.size == 9
         "01"
       elsif id_number.to_i.to_s.size == 10
         "02"
